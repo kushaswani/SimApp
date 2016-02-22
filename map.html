@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <title>PEV Team</title>
+    <link rel="stylesheet" type="text/css" href="css/map.css"></link>
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDLnF0RwcwqWQtnZwyjwe0V0qJjmJmnH1c"></script>
+    <script type="text/javascript" src="lib/jquery.js"></script>
+    <script type="text/javascript" src="lib/papaparse.min.js"></script>
+    <script type="text/javascript" src="js/map.js"></script>
+  </head>
+
+<body>
+	<div id="map-canvas"></div>
+	<div id="input" class="style">
+		<form id="taxi-data">
+			<div>
+				<label for="trip-file"> Trip File: </label>
+				<input id="trip-file" name="trip-file" type="file" />
+			<!--</div>-->
+			<!--<div>-->
+			    <button id="bothBtn" onclick="both()">Bike &amp; Taxi</button>
+	            <button id="bikeBtn" onclick="bike()">Bike</button>
+                <button id="driveBtn" onclick="car()">Taxi</button>
+			</div>
+	</div>
+
+	<!--<div id="trip-box" class="style">-->
+	<!--	<div id="prompt">Please upload your file</div>-->
+	<!--	<ol id="trip-list"></ol>-->
+	<!--</div>-->
+
+	<div>
+    <table id="data-box" class="style" style="border-spacing:0">
+      <tr style="line-height:20px;">
+        <td class="header"></td>
+        <td class="header">Current Trip Data /</td>
+        <td class="header">Total Trip :</td>
+      </tr>
+      <tr>
+        <td style="text-align: left;">Bike Time : </td>
+        <td><p id="c-bike-time">0sec</p></td>
+        <td><p id="bike-time">0sec</p></td>
+      </tr>
+      <tr>
+        <td style="text-align: left;">Bike Distance : </td>
+        <td><p id="c-bike-dist">0m</p></td>
+        <td><p id="bike-dist">0m</p></td>
+      </tr>
+      <tr>
+        <td style="text-align: left;">Drive Time : </td>
+        <td><p id="c-drive-time">0sec</p></td>
+        <td><p id="drive-time">0sec</p></td>
+      </tr>
+      <tr>
+        <td style="text-align: left;">Drive Distance : </td>
+        <td><p id="c-drive-dist">0m</p></td>
+        <td><p id="drive-dist">0m</p></td>
+      </tr>
+      <tr style="line-height:20px;">
+        <td class="header"></td>
+        <td class="header"></td>
+        <td class="header"></td>
+      </tr>
+      <tr>
+        <td style="text-align:left;">Taxi time :</td>
+        <td><p id="c-taxi-time">0sec</p></td>
+        <td><p id="t-taxi-time">0sec</p></td>
+      </tr>
+    </table>
+   </div>
+  </body>
+ </html>
