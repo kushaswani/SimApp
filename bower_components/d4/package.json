@@ -1,0 +1,44 @@
+{
+  "name": "d4",
+  "version": "0.9.4",
+  "description": "A friendly reusable chart DSL for D3",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/heavysixer/d4"
+  },
+  "main": "d4.js",
+  "keywords": [
+    "d3.js",
+    "visualization",
+    "svg"
+  ],
+  "author": {
+    "name": "Mark Daggett, D4 Team",
+    "uri": "https://github.com/heavysixer/d4/blob/master/AUTHORS.txt"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "license": "MIT Expat",
+  "devDependencies": {
+    "chai": "~1.9.0",
+    "chai-spies": "~0.5.1",
+    "grunt": "~0.4.0",
+    "grunt-cli": "~0.1.11",
+    "grunt-contrib-concat": "~0.1.3",
+    "grunt-contrib-jshint": "~0.1.1",
+    "grunt-contrib-uglify": "~0.1.1",
+    "grunt-contrib-watch": "~0.3.1",
+    "grunt-jsbeautifier": "^0.2.7",
+    "grunt-mocha": "~0.4.6",
+    "grunt-node-inspector": "~0.1.2",
+    "grunt-plato": "*",
+    "grunt-remove-logging": ">=0.1.0",
+    "sinon": "~1.8.1",
+    "sinon-chai": "~2.5.0"
+  },
+  "dependencies": {
+    "grunt-env": "~0.4.1",
+    "grunt-contrib-clean": "~0.5.0"
+  }
+}
