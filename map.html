@@ -1,36 +1,208 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta http-equiv="content-type" content="text/html; charset=utf-8">
-    <title>PEV Team</title>
-    <link rel="stylesheet" type="text/css" href="css/map.css"></link>
-    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDLnF0RwcwqWQtnZwyjwe0V0qJjmJmnH1c"></script>
-    <script type="text/javascript" src="lib/jquery.js"></script>
-    <script type="text/javascript" src="lib/papaparse.min.js"></script>
-    <script type="text/javascript" src="js/map.js"></script>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>PEV Team</title>
+
+
+  <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDLnF0RwcwqWQtnZwyjwe0V0qJjmJmnH1c"></script>
+  <script type="text/javascript" src="lib/jquery.js"></script>
+  <script type="text/javascript" src="lib/papaparse.min.js"></script>
+  <script type="text/javascript" src="js/map.js"></script>
+  <script src="bower_components/d4/d4.js"></script>
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+  <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>  
+  <link href="bower_components/d4/d4.css" rel="stylesheet" />
+
+
+  <link rel="stylesheet" type="text/css" href="css/map.css"></link>
+
+  <style type="text/css">
+  
+  .Row
+  {
+    display: table;
+    width: 100%; /*Optional*/
+    table-layout: fixed; /*Optional*/
+    border-spacing: 10px; /*Optional*/
+    
+  }
+  .Column
+  {
+    display: table-cell;
+    background-color: white; /*Optional*/
+  }
+
+  </style>
+
+  <style>
+  .chart {
+    background: #b0e0f8;
+    margin: 5px;
+  }
+
+  .chart rect {
+    stroke: white;
+    fill: steelblue;
+  }
+
+  .chart text {
+    fill: white;
+  }
+
+  .chart text.name {
+    fill: #000;
+  }
+
+  .chart line {
+    stroke: #c1c1c1;
+  }
+
+  .chart .rule {
+    fill: #000;
+  }
+
+  /* removed the while stroke as we don't need it anymore */
+  #step-5 .chart rect {
+    stroke: none;
+  }
+
+  /* a bit of hovering effect for each bar */
+  #step-5 .chart rect:hover {
+    fill: #64707D;
+  }
+
+
+
+  .left{
+    position: absolute;
+    left: 0px;
+    width: 20%;
+    /*border: 3px solid #ffffff;*/
+    padding: 10px;
+
+  }
+
+  .center{
+    left:0px;
+    margin: auto;
+    width: 10%;
+    /*border: 3px solid #ffffff;*/
+    padding: 10px;
+  }
+
+  .right-1{
+    position: absolute;
+    margin: auto;
+    right: 20px;
+    width: 20%;
+    height: 30%;
+
+  }
+  .other{
+
+    width: 30%;
+    height: 15%;
+
+  }
+
+  </style>
+
+  <style>
+
+/*  body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    margin: auto;
+    position: relative;
+    width: 960px;
+    }*/
+
+    text {
+      font: 10px sans-serif;
+    }
+
+    .axis path,
+    .axis line {
+      fill: none;
+      stroke: #09C;
+      shape-rendering: crispEdges;
+    }
+
+    form {
+      position: absolute;
+      left: 10px;
+      top: 5px;
+    }
+
+    </style>
+
+    <style>
+    .axis path,
+    .axis line {
+      fill: none;
+      stroke: #09C;
+      shape-rendering: crispEdges;
+    }
+    .axis text {
+      font-family: sans-serif;
+      font-size: 11px;
+    }
+
+    rect {
+      -moz-transition: all 0.3s;
+      -webkit-transition: all 0.3s;
+      -o-transition: all 0.3s;
+      transition: all 0.3s;
+    }
+    rect:hover{
+      fill: orange;
+    }
+
+    </style>
+
   </head>
 
-<body>
-	<div id="map-canvas"></div>
-	<div id="input" class="style">
-		<form id="taxi-data">
-			<div>
-				<label for="trip-file"> Trip File: </label>
-				<input id="trip-file" name="trip-file" type="file" />
-			<!--</div>-->
-			<!--<div>-->
-			    <button id="bothBtn" onclick="both()">Bike &amp; Taxi</button>
-	            <button id="bikeBtn" onclick="bike()">Bike</button>
-                <button id="driveBtn" onclick="car()">Taxi</button>
-			</div>
-	</div>
+  <body>
+   <div id="map-canvas"></div>
 
-	<!--<div id="trip-box" class="style">-->
-	<!--	<div id="prompt">Please upload your file</div>-->
-	<!--	<ol id="trip-list"></ol>-->
-	<!--</div>-->
+   <div id="form" class="style-upper-right">
 
-	<div>
+    <div id="input">
+
+     <form id="taxi-data">
+       <div>
+        <label for="trip-file" class="center"> Trip File: </label>
+        <input id="trip-file" name="trip-file" type="file" />
+        <!--</div>-->
+        <!--<div>-->
+        <button id="bothBtn" onclick="both()">Bike &amp; Taxi</button>
+        <button id="bikeBtn" onclick="bike()">Bike</button>
+        <button id="driveBtn" onclick="car()">Taxi</button>
+      </div>
+    </form>
+  </div>
+
+</div>
+
+
+<div class="Row">
+  <div id="step-10" class="Column">
+  </div>
+  <div id="step-5" class="Column">
+  </div>
+  <div id="example" class="Column">
+  </div>
+</div>
+
+
+
+
+<!--<div id="trip-box" class="style">-->
+<!--	<div id="prompt">Please upload your file</div>-->
+<!--	<ol id="trip-list"></ol>-->
+<!--</div>-->
+
+<!-- 	<div>
     <table id="data-box" class="style" style="border-spacing:0">
       <tr style="line-height:20px;">
         <td class="header"></td>
@@ -68,6 +240,735 @@
         <td><p id="t-taxi-time">0sec</p></td>
       </tr>
     </table>
-   </div>
-  </body>
- </html>
+  </div> -->
+
+
+  
+  <script>
+  // console.log(localStorage.getItem("c_taxi_time"));
+  // jQuery(function($) {
+    var names = ['Bike', 'Taxi', 'Bike & Taxi'],
+
+
+    hotdogs = [8, 4, 9],
+    chart,
+    width = 200,
+    bar_height = 20,
+    height = bar_height * names.length;
+
+    /* step 1 */
+    chart = d3.select($("#step-1")[0])
+    .append('svg')
+    .attr('class', 'chart')
+    .attr('width', width)
+    .attr('height', height);
+
+    /* step 2 */
+    var x, y;
+
+    chart = d3.select($("#step-2")[0])
+    .append('svg')
+    .attr('class', 'chart')
+    .attr('width', width)
+    .attr('height', height);
+
+    x = d3.scale.linear()
+    .domain([0, d3.max(hotdogs)])
+    .range([0, width]);
+
+    y = d3.scale.ordinal()
+    .domain(hotdogs)
+    .rangeBands([0, height]);
+
+    chart.selectAll("rect")
+    .data(hotdogs)
+    .enter().append("rect")
+    .attr("x", 0)
+    .attr("y", y)
+    .attr("width", x)
+    .attr("height", bar_height);
+
+    /* step 3 */
+    chart = d3.select($("#step-3")[0])
+    .append('svg')
+    .attr('class', 'chart')
+    .attr('width', width)
+    .attr('height', height);
+
+    chart.selectAll("rect")
+    .data(hotdogs)
+    .enter().append("rect")
+    .attr("x", 0)
+    .attr("y", y)
+    .attr("width", x)
+    .attr("height", y.rangeBand());
+
+    chart.selectAll("text")
+    .data(hotdogs)
+    .enter().append("text")
+    .attr("x", x)
+    .attr("y", function(d){ return y(d) + y.rangeBand()/2; } )
+    .attr("dx", -5)
+    .attr("dy", ".36em")
+    .attr("text-anchor", "end")
+    .text(String);
+
+    /* step 4 */
+    var left_width = 100;
+
+    chart = d3.select($("#step-4")[0])
+    .append('svg')
+    .attr('class', 'chart')
+    .attr('width', left_width + width)
+    .attr('height', height);
+
+    chart.selectAll("rect")
+    .data(hotdogs)
+    .enter().append("rect")
+    .attr("x", left_width)
+    .attr("y", y)
+    .attr("width", x)
+    .attr("height", y.rangeBand());
+
+    chart.selectAll("text.score")
+    .data(hotdogs)
+    .enter().append("text")
+    .attr("x", function(d) { return x(d) + left_width; })
+    .attr("y", function(d){ return y(d) + y.rangeBand()/2; } )
+    .attr("dx", -5)
+    .attr("dy", ".36em")
+    .attr("text-anchor", "end")
+    .attr('class', 'score')
+    .text(String);
+
+    chart.selectAll("text.name")
+    .data(names)
+    .enter().append("text")
+    .attr("x", left_width / 2)
+    .attr("y", function(d, i){ return y(hotdogs[i]) + y.rangeBand()/2; } )
+    .attr("dy", ".36em")
+    .attr("text-anchor", "middle")
+    .attr('class', 'name')
+    .text(String);
+
+    /* step 5 */
+    var gap = 2;
+  // redefine y for adjusting the gap
+  y = d3.scale.ordinal()
+  .domain(hotdogs)
+  .rangeBands([0, (bar_height + 2 * gap) * names.length]);
+
+
+  chart = d3.select($("#step-5")[0])
+  .append('svg')
+  .attr('class', 'chart')
+  .attr('width', left_width + width + 40)
+  .attr('height', (bar_height + gap * 2) * names.length + 30)
+  .append("g")
+  .attr("transform", "translate(10, 20)");
+
+  chart.selectAll("line")
+  .data(x.ticks(d3.max(hotdogs)))
+  .enter().append("line")
+  .attr("x1", function(d) { return x(d) + left_width; })
+  .attr("x2", function(d) { return x(d) + left_width; })
+  .attr("y1", 0)
+  .attr("y2", (bar_height + gap * 2) * names.length);
+
+  chart.selectAll(".rule")
+  .data(x.ticks(d3.max(hotdogs)))
+  .enter().append("text")
+  .attr("class", "rule")
+  .attr("x", function(d) { return x(d) + left_width; })
+  .attr("y", 0)
+  .attr("dy", -6)
+  .attr("text-anchor", "middle")
+  .attr("font-size", 10)
+  .text(String);
+
+  chart.selectAll("rect")
+  .data(hotdogs)
+  .enter().append("rect")
+  .attr("x", left_width)
+  .attr("y", function(d) { return y(d) + gap; })
+  .attr("width", x)
+  .attr("height", bar_height);
+
+  chart.selectAll("text.score")
+  .data(hotdogs)
+  .enter().append("text")
+  .attr("x", function(d) { return x(d) + left_width; })
+  .attr("y", function(d, i){ return y(d) + y.rangeBand()/2; } )
+  .attr("dx", -5)
+  .attr("dy", ".36em")
+  .attr("text-anchor", "end")
+  .attr('class', 'score')
+  .text(String);
+
+  chart.selectAll("text.name")
+  .data(names)
+  .enter().append("text")
+  .attr("x", left_width / 2)
+  .attr("y", function(d, i){ return y(hotdogs[i]) + y.rangeBand()/2; } )
+  .attr("dy", ".36em")
+  .attr("text-anchor", "middle")
+  .attr('class', 'name')
+  .text(String);
+
+// }(jQuery));
+</script>
+
+
+
+<form>
+  <!-- <label><input type="radio" name="mode" value="grouped"> Grouped</label>
+  <label><input type="radio" name="mode" value="stacked" checked> Stacked</label> -->
+</form>
+<!-- <script src="//d3js.org/d3.v3.min.js"></script> -->
+<script>
+
+var n = 2, // number of layers
+    m = 15, // number of samples per layer
+    stack = d3.layout.stack(),
+    layers = stack(d3.range(n).map(function() { return bumpLayer(m, .1); })),
+    yGroupMax = d3.max(layers, function(layer) { return d3.max(layer, function(d) { return d.y; }); }),
+    yStackMax = d3.max(layers, function(layer) { return d3.max(layer, function(d) { return d.y0 + d.y; }); });
+
+    var margin = {top: 40, right: 10, bottom: 20, left: 10},
+    width = 240 - margin.left - margin.right,
+    height = 125 - margin.top - margin.bottom;
+
+    var x = d3.scale.ordinal()
+    .domain(d3.range(m))
+    .rangeRoundBands([0, width], .08);
+
+    var y = d3.scale.linear()
+    .domain([0, yStackMax])
+    .range([height, 0]);
+
+    var color = d3.scale.linear()
+    .domain([0, n - 1])
+    .range(["#6699ff", "#b3ccff"]);
+
+    var xAxis = d3.svg.axis()
+    .scale(x)
+    .tickSize(0)
+    .tickPadding(6)
+    .orient("bottom");
+
+    var svg = d3.select($("#step-10")[0]).append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    var layer = svg.selectAll(".layer")
+    .data(layers)
+    .enter().append("g")
+    .attr("class", "layer")
+    .style("fill", function(d, i) { return color(i); });
+
+    var rect = layer.selectAll("rect")
+    .data(function(d) { return d; })
+    .enter().append("rect")
+    .attr("x", function(d) { return x(d.x); })
+    .attr("y", height)
+    .attr("width", x.rangeBand())
+    .attr("height", 0);
+
+    rect.transition()
+    .delay(function(d, i) { return i * 10; })
+    .attr("y", function(d) { return y(d.y0 + d.y); })
+    .attr("height", function(d) { return y(d.y0) - y(d.y0 + d.y); });
+
+    svg.append("g")
+    .attr("class", "x axis")
+    .attr("transform", "translate(0," + height + ")")
+    .call(xAxis);
+
+    d3.selectAll("input").on("change", change);
+
+    var timeout = setTimeout(function() {
+      d3.select("input[value=\"grouped\"]").property("checked", true).each(change);
+    }, 2000);
+
+    function change() {
+      clearTimeout(timeout);
+      if (this.value === "stacked") transitionGrouped();
+      else transitionStacked();
+    }
+
+    function transitionGrouped() {
+      y.domain([0, yGroupMax]);
+
+      rect.transition()
+      .duration(500)
+      .delay(function(d, i) { return i * 10; })
+      .attr("x", function(d, i, j) { return x(d.x) + x.rangeBand() / n * j; })
+      .attr("width", x.rangeBand() / n)
+      .transition()
+      .attr("y", function(d) { return y(d.y); })
+      .attr("height", function(d) { return height - y(d.y); });
+    }
+
+    function transitionStacked() {
+      y.domain([0, yStackMax]);
+
+      rect.transition()
+      .duration(500)
+      .delay(function(d, i) { return i * 10; })
+      .attr("y", function(d) { return y(d.y0 + d.y); })
+      .attr("height", function(d) { return y(d.y0) - y(d.y0 + d.y); })
+      .transition()
+      .attr("x", function(d) { return x(d.x); })
+      .attr("width", x.rangeBand());
+    }
+
+// Inspired by Lee Byron's test data generator.
+function bumpLayer(n, o) {
+
+  function bump(a) {
+    var x = 1 / (.1 + Math.random()),
+    y = 2 * Math.random() - .5,
+    z = 10 / (.1 + Math.random());
+    for (var i = 0; i < n; i++) {
+      var w = (i / n - y) * z;
+      a[i] += x * Math.exp(-w * w);
+    }
+  }
+
+  var a = [], i;
+  for (i = 0; i < n; ++i) a[i] = o + o * Math.random();
+    for (i = 0; i < 5; ++i) bump(a);
+      return a.map(function(d, i) { return {x: i, y: Math.max(0, d)}; });
+  }
+
+  </script>
+
+  
+  <script type="text/javascript">
+
+  var w = 200;
+  var h = 80;
+
+
+  var dataset = [ 
+  { key: 0, value: 5 },
+  { key: 1, value: 10 },
+  { key: 2, value: 13 },
+  { key: 3, value: 19 },
+  { key: 4, value: 21 },
+  { key: 5, value: 25 },
+  { key: 6, value: 22 },
+  { key: 7, value: 18 },
+  { key: 8, value: 15 } ];
+  var xScale = d3.scale.ordinal()
+  .domain(d3.range(dataset.length))
+  .rangeRoundBands([0, w], 0.05); 
+
+  var yScale = d3.scale.linear()
+  .domain([0, d3.max(dataset, function(d) {return d.value;})])
+  .range([0, h]);
+
+  var key = function(d) {
+    return d.key;
+  };
+
+
+//Create SVG element
+var svg = d3.select($("#example")[0])
+.append("svg")
+.attr("width", w)
+.attr("height", h);
+
+//Create bars
+svg.selectAll("rect")
+.data(dataset, key)
+.enter()
+.append("rect")
+.attr("x", function(d, i) {
+  return xScale(i);
+})
+.attr("y", function(d) {
+  return h - yScale(d.value);
+})
+.attr("width", xScale.rangeBand())
+.attr("height", function(d) {
+  return yScale(d.value);
+})
+.attr("fill", function(d) {
+  // return "rgb(0, 0, " + (d.value * 10) + ")";
+  return "rgb(51, 153, 255)"
+})
+
+  //Tooltip
+  .on("mouseover", function(d) {
+    //Get this bar's x/y values, then augment for the tooltip
+    var xPosition = parseFloat(d3.select(this).attr("x")) + xScale.rangeBand() / 2;
+    var yPosition = parseFloat(d3.select(this).attr("y")) + 14;
+    
+    //Update Tooltip Position & value
+    d3.select("#tooltip")
+    .style("left", xPosition + "px")
+    .style("top", yPosition + "px")
+    .select("#value")
+    .text(d.value);
+    d3.select("#tooltip").classed("hidden", false)
+  })
+  .on("mouseout", function() {
+    //Remove the tooltip
+    d3.select("#tooltip").classed("hidden", true);
+  })  ;
+
+//Create labels
+svg.selectAll("text")
+.data(dataset, key)
+.enter()
+.append("text")
+.text(function(d) {
+  return d.value;
+})
+.attr("text-anchor", "middle")
+.attr("x", function(d, i) {
+  return xScale(i) + xScale.rangeBand() / 2;
+})
+.attr("y", function(d) {
+  return h - yScale(d.value) + 14;
+})
+.attr("font-family", "sans-serif") 
+.attr("font-size", "11px")
+.attr("fill", "white");
+
+var sortOrder = false;
+var sortBars = function () {
+  sortOrder = !sortOrder;
+
+  sortItems = function (a, b) {
+    if (sortOrder) {
+      return a.value - b.value;
+    }
+    return b.value - a.value;
+  };
+
+  svg.selectAll("rect")
+  .sort(sortItems)
+  .transition()
+  .delay(function (d, i) {
+    return i * 50;
+  })
+  .duration(1000)
+  .attr("x", function (d, i) {
+    return xScale(i);
+  });
+
+  svg.selectAll('text')
+  .sort(sortItems)
+  .transition()
+  .delay(function (d, i) {
+    return i * 50;
+  })
+  .duration(1000)
+  .text(function (d) {
+    return d.value;
+  })
+  .attr("text-anchor", "middle")
+  .attr("x", function (d, i) {
+    return xScale(i) + xScale.rangeBand() / 2;
+  })
+  .attr("y", function (d) {
+    return h - yScale(d.value) + 14;
+  });
+};
+// Add the onclick callback to the button
+d3.select("#sort").on("click", sortBars);
+d3.select("#reset").on("click", reset);
+function randomSort() {
+
+
+  svg.selectAll("rect")
+  .sort(sortItems)
+  .transition()
+  .delay(function (d, i) {
+    return i * 50;
+  })
+  .duration(1000)
+  .attr("x", function (d, i) {
+    return xScale(i);
+  });
+
+  svg.selectAll('text')
+  .sort(sortItems)
+  .transition()
+  .delay(function (d, i) {
+    return i * 50;
+  })
+  .duration(1000)
+  .text(function (d) {
+    return d.value;
+  })
+  .attr("text-anchor", "middle")
+  .attr("x", function (d, i) {
+    return xScale(i) + xScale.rangeBand() / 2;
+  })
+  .attr("y", function (d) {
+    return h - yScale(d.value) + 14;
+  });
+}
+function reset() {
+  svg.selectAll("rect")
+  .sort(function(a, b){
+    return a.key - b.key;
+  })
+  .transition()
+  .delay(function (d, i) {
+    return i * 50;
+  })
+  .duration(1000)
+  .attr("x", function (d, i) {
+    return xScale(i);
+  });
+
+  svg.selectAll('text')
+  .sort(function(a, b){
+    return a.key - b.key;
+  })
+  .transition()
+  .delay(function (d, i) {
+    return i * 50;
+  })
+  .duration(1000)
+  .text(function (d) {
+    return d.value;
+  })
+  .attr("text-anchor", "middle")
+  .attr("x", function (d, i) {
+    return xScale(i) + xScale.rangeBand() / 2;
+  })
+  .attr("y", function (d) {
+    return h - yScale(d.value) + 14;
+  });
+};
+
+
+
+
+
+</script>
+
+
+
+ <script type="text/javascript">
+
+  var w = 200;
+  var h = 80;
+
+
+  var dataset = [ 
+  { key: 0, value: 5 },
+  { key: 1, value: 10 },
+  { key: 2, value: 13 },
+  { key: 3, value: 19 },
+  { key: 4, value: 21 },
+  { key: 5, value: 25 },
+  { key: 6, value: 22 },
+  { key: 7, value: 18 },
+  { key: 8, value: 15 } ];
+  var xScale = d3.scale.ordinal()
+  .domain(d3.range(dataset.length))
+  .rangeRoundBands([0, w], 0.05); 
+
+  var yScale = d3.scale.linear()
+  .domain([0, d3.max(dataset, function(d) {return d.value;})])
+  .range([0, h]);
+
+  var key = function(d) {
+    return d.key;
+  };
+
+
+//Create SVG element
+var svg = d3.select($("#example")[0])
+.append("svg")
+.attr("width", w)
+.attr("height", h);
+
+//Create bars
+svg.selectAll("rect")
+.data(dataset, key)
+.enter()
+.append("rect")
+.attr("x", function(d, i) {
+  return xScale(i);
+})
+.attr("y", function(d) {
+  return h - yScale(d.value);
+})
+.attr("width", xScale.rangeBand())
+.attr("height", function(d) {
+  return yScale(d.value);
+})
+.attr("fill", function(d) {
+  // return "rgb(0, 0, " + (d.value * 10) + ")";
+  return "rgb(51, 153, 255)"
+})
+
+  //Tooltip
+  .on("mouseover", function(d) {
+    //Get this bar's x/y values, then augment for the tooltip
+    var xPosition = parseFloat(d3.select(this).attr("x")) + xScale.rangeBand() / 2;
+    var yPosition = parseFloat(d3.select(this).attr("y")) + 14;
+    
+    //Update Tooltip Position & value
+    d3.select("#tooltip")
+    .style("left", xPosition + "px")
+    .style("top", yPosition + "px")
+    .select("#value")
+    .text(d.value);
+    d3.select("#tooltip").classed("hidden", false)
+  })
+  .on("mouseout", function() {
+    //Remove the tooltip
+    d3.select("#tooltip").classed("hidden", true);
+  })  ;
+
+//Create labels
+svg.selectAll("text")
+.data(dataset, key)
+.enter()
+.append("text")
+.text(function(d) {
+  return d.value;
+})
+.attr("text-anchor", "middle")
+.attr("x", function(d, i) {
+  return xScale(i) + xScale.rangeBand() / 2;
+})
+.attr("y", function(d) {
+  return h - yScale(d.value) + 14;
+})
+.attr("font-family", "sans-serif") 
+.attr("font-size", "11px")
+.attr("fill", "white");
+
+var sortOrder = false;
+var sortBars = function () {
+  sortOrder = !sortOrder;
+
+  sortItems = function (a, b) {
+    if (sortOrder) {
+      return a.value - b.value;
+    }
+    return b.value - a.value;
+  };
+
+  svg.selectAll("rect")
+  .sort(sortItems)
+  .transition()
+  .delay(function (d, i) {
+    return i * 50;
+  })
+  .duration(1000)
+  .attr("x", function (d, i) {
+    return xScale(i);
+  });
+
+  svg.selectAll('text')
+  .sort(sortItems)
+  .transition()
+  .delay(function (d, i) {
+    return i * 50;
+  })
+  .duration(1000)
+  .text(function (d) {
+    return d.value;
+  })
+  .attr("text-anchor", "middle")
+  .attr("x", function (d, i) {
+    return xScale(i) + xScale.rangeBand() / 2;
+  })
+  .attr("y", function (d) {
+    return h - yScale(d.value) + 14;
+  });
+};
+// Add the onclick callback to the button
+d3.select("#sort").on("click", sortBars);
+d3.select("#reset").on("click", reset);
+function randomSort() {
+
+
+  svg.selectAll("rect")
+  .sort(sortItems)
+  .transition()
+  .delay(function (d, i) {
+    return i * 50;
+  })
+  .duration(1000)
+  .attr("x", function (d, i) {
+    return xScale(i);
+  });
+
+  svg.selectAll('text')
+  .sort(sortItems)
+  .transition()
+  .delay(function (d, i) {
+    return i * 50;
+  })
+  .duration(1000)
+  .text(function (d) {
+    return d.value;
+  })
+  .attr("text-anchor", "middle")
+  .attr("x", function (d, i) {
+    return xScale(i) + xScale.rangeBand() / 2;
+  })
+  .attr("y", function (d) {
+    return h - yScale(d.value) + 14;
+  });
+}
+function reset() {
+  svg.selectAll("rect")
+  .sort(function(a, b){
+    return a.key - b.key;
+  })
+  .transition()
+  .delay(function (d, i) {
+    return i * 50;
+  })
+  .duration(1000)
+  .attr("x", function (d, i) {
+    return xScale(i);
+  });
+
+  svg.selectAll('text')
+  .sort(function(a, b){
+    return a.key - b.key;
+  })
+  .transition()
+  .delay(function (d, i) {
+    return i * 50;
+  })
+  .duration(1000)
+  .text(function (d) {
+    return d.value;
+  })
+  .attr("text-anchor", "middle")
+  .attr("x", function (d, i) {
+    return xScale(i) + xScale.rangeBand() / 2;
+  })
+  .attr("y", function (d) {
+    return h - yScale(d.value) + 14;
+  });
+};
+
+
+
+
+
+</script>
+
+
+</body>
+</html>
+
+
+

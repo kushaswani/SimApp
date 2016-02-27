@@ -1,0 +1,12 @@
+{
+  "name": "d4",
+  "description": "A friendly charting DSL for D3",
+  "main": "d4.js",
+  "version": "0.9.4",
+  "dependencies": {
+    "d3": "~3.4.4"
+  },
+  "devDependencies": {
+    "d3": "~3.4.4"
+  }
+}
