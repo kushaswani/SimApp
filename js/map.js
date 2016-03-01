@@ -26,6 +26,63 @@ var t_taxi_time=0;
 
 // window.localStorage.setItem(id, json string)
 
+
+$(function() {
+    $( "#sliderFleetSize" ).slider({
+      value: 20,
+      min: 0,
+      max: 250,
+      step: 10,
+      slide: function( event, ui ) {
+        $( "#fleetSize" ).val( ui.value );
+      }
+    });
+    $( "#fleetSize" ).val(  $( "#sliderFleetSize" ).slider( "value" ) );
+});
+
+
+$(function() {
+    $( "#sliderMaxTripDist" ).slider({
+      value: 3,
+      min: 1,
+      max: 5,
+      step: .5,
+      slide: function( event, ui ) {
+        $( "#maxTripDist" ).val( ui.value + " mi" );
+      }
+    });
+    $( "#maxTripDist" ).val( $( "#sliderMaxTripDist" ).slider( "value" ) + " mi"  );
+});
+
+
+$(function() {
+    $( "#sliderParcelAmount" ).slider({
+      value: 10,
+      min: 0,
+      max: 250,
+      step: 10,
+      slide: function( event, ui ) {
+        $( "#parcelAmount" ).val( ui.value + " /hr");
+      }
+    });
+    $( "#parcelAmount" ).val(  $( "#sliderParcelAmount" ).slider( "value" ) + " /hr"  );
+});
+
+$(function() {
+    $( "#sliderSimSpeed" ).slider({
+      value: 10,
+      min: 5,
+      max: 20,
+      step: 1,
+      slide: function( event, ui ) {
+        $( "#simSpeed" ).val( ui.value + "x" );
+      }
+    });
+    $( "#simSpeed" ).val(  $( "#sliderSimSpeed" ).slider( "value" ) + "x"  );
+});
+
+
+
 function day() {
     var time = 0;
     var timeLines = makeTimeLines();
@@ -37,7 +94,6 @@ function day() {
         time++;
         
     }, 1000);
-
 }
 
 function makeTimeLines() {
@@ -420,7 +476,10 @@ window.onload = function() {
     map = new Maps.Map(document.getElementById('map-canvas'), {
       zoom: 12,
       center: new Maps.LatLng(42.3601, -71.0589),
-      mapTypeId: Maps.MapTypeId.ROADMAP
+      mapTypeId: Maps.MapTypeId.ROADMAP,
+      mapTypeControl: false,
+      streetViewControl: false,
+      zoomControl: false
   });
     map.setOptions({styles: darkMap});
     document.getElementById("trip-file").value = "";

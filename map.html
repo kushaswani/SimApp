@@ -1,258 +1,158 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <title>PEV Team</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<title>PEV Deployment Simulator</title>
 
 
-  <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDLnF0RwcwqWQtnZwyjwe0V0qJjmJmnH1c"></script>
-  <script type="text/javascript" src="lib/jquery.js"></script>
-  <script type="text/javascript" src="lib/papaparse.min.js"></script>
-  <script type="text/javascript" src="js/map.js"></script>
-  <script src="bower_components/d4/d4.js"></script>
-  <script src="http://d3js.org/d3.v3.min.js"></script>
-  <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>  
-  <link href="bower_components/d4/d4.css" rel="stylesheet" />
+<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDLnF0RwcwqWQtnZwyjwe0V0qJjmJmnH1c"></script>
+<script type="text/javascript" src="lib/jquery.js"></script>
+<script type="text/javascript" src="lib/papaparse.min.js"></script>
+<script type="text/javascript" src="js/map.js"></script>
+<script src="bower_components/d4/d4.js"></script>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>  
+<link href="bower_components/d4/d4.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+<link href='https://fonts.googleapis.com/css?family=Open+Sans:300, 300italic,400,600,800,800italic,600italic' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+<script src="https://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<link rel="stylesheet" type="text/css" href="css/map.css"></link>
+
+</head>
 
 
-  <link rel="stylesheet" type="text/css" href="css/map.css"></link>
 
-  <style type="text/css">
+<body style="font-family: 'Open Sans', sans-serif">
+
+<div id="map-canvas"></div>
   
-  .Row
-  {
-    display: table;
-    width: 100%; /*Optional*/
-    table-layout: fixed; /*Optional*/
-    border-spacing: 10px; /*Optional*/
-    
-  }
-  .Column
-  {
-    display: table-cell;
-    background-color: white; /*Optional*/
-  }
 
-  </style>
-
-  <style>
-  .chart {
-    background: #b0e0f8;
-    margin: 5px;
-  }
-
-  .chart rect {
-    stroke: white;
-    fill: steelblue;
-  }
-
-  .chart text {
-    fill: white;
-  }
-
-  .chart text.name {
-    fill: #000;
-  }
-
-  .chart line {
-    stroke: #c1c1c1;
-  }
-
-  .chart .rule {
-    fill: #000;
-  }
-
-  /* removed the while stroke as we don't need it anymore */
-  #step-5 .chart rect {
-    stroke: none;
-  }
-
-  /* a bit of hovering effect for each bar */
-  #step-5 .chart rect:hover {
-    fill: #64707D;
-  }
-
-
-
-  .left{
-    position: absolute;
-    left: 0px;
-    width: 20%;
-    /*border: 3px solid #ffffff;*/
-    padding: 10px;
-
-  }
-
-  .center{
-    left:0px;
-    margin: auto;
-    width: 10%;
-    /*border: 3px solid #ffffff;*/
-    padding: 10px;
-  }
-
-  .right-1{
-    position: absolute;
-    margin: auto;
-    right: 20px;
-    width: 20%;
-    height: 30%;
-
-  }
-  .other{
-
-    width: 30%;
-    height: 15%;
-
-  }
-
-  </style>
-
-  <style>
-
-/*  body {
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    margin: auto;
-    position: relative;
-    width: 960px;
-    }*/
-
-    text {
-      font: 10px sans-serif;
-    }
-
-    .axis path,
-    .axis line {
-      fill: none;
-      stroke: #09C;
-      shape-rendering: crispEdges;
-    }
-
-    form {
-      position: absolute;
-      left: 10px;
-      top: 5px;
-    }
-
-    </style>
-
-    <style>
-    .axis path,
-    .axis line {
-      fill: none;
-      stroke: #09C;
-      shape-rendering: crispEdges;
-    }
-    .axis text {
-      font-family: sans-serif;
-      font-size: 11px;
-    }
-
-    rect {
-      -moz-transition: all 0.3s;
-      -webkit-transition: all 0.3s;
-      -o-transition: all 0.3s;
-      transition: all 0.3s;
-    }
-    rect:hover{
-      fill: orange;
-    }
-
-    </style>
-
-  </head>
-
-  <body>
-   <div id="map-canvas"></div>
-
-   <div id="form" class="style-upper-right">
-
+<!--   File Loading Menu   -->  
+  
+  <div id="form" class="style-upper-right">
     <div id="input">
+      <form id="taxi-data">
+         <div>
+          <label for="trip-file" class="center"> Trip File: </label>
+          <input id="trip-file" name="trip-file" type="file" />
+          <button id="bothBtn" onclick="both()">Bike &amp; Taxi</button>
+          <button id="bikeBtn" onclick="bike()">Bike</button>
+          <button id="driveBtn" onclick="car()">Taxi</button>
+        </div>
+      </form>
+    </div>
 
-     <form id="taxi-data">
-       <div>
-        <label for="trip-file" class="center"> Trip File: </label>
-        <input id="trip-file" name="trip-file" type="file" />
-        <!--</div>-->
-        <!--<div>-->
-        <button id="bothBtn" onclick="both()">Bike &amp; Taxi</button>
-        <button id="bikeBtn" onclick="bike()">Bike</button>
-        <button id="driveBtn" onclick="car()">Taxi</button>
-      </div>
-    </form>
   </div>
+
+
+
+
+ 
+
+
+<div class="row">
+  <div class="col-lg-2"  style="color: white;  margin-top: 0px; margin-left: 20px"> 
+    <h3 style="margin-top:10px; font-style:italic">PEV-SIMULATOR</h3>
+    <p style="font-weight:300; font-style:italic; font-size:1em; ">How many Shared Autonomous Vehicles do we need in a city? </p>
+    <div style="margin-top: 20px; font-size: .9em" id="btn-group">
+          <input type="button" class="btn btn-xs  mode" style="background-color:#ff66cc; color: white" value="Boston">
+          <input type="button" class="btn btn-xs  mode" style="background-color:#ff66cc; color: white" value="Andorra">
+          <input type="button" class="btn btn-xs  mode" style="background-color:#ff66cc; color: white" value="Taipei">               
+         <!--  <input type="button" class="btn btn-info btn-xs  mode" value="Hamburg"> -->
+    </div>
+  </div>
+
+  <div class="col-lg-3"  style="color: white; margin-top: 10px"> 
+    <div style="font-weight:600">
+      <i class="fa fa-percent"></i> UTILIZATION
+    </div>
+    <div>
+      <div style="display: inline-block; color: #FFFF00"> <i class="fa fa-child"></i> </div>
+      <div style="display: inline-block; color: #FF9900 "> <i class="fa fa-cube"></i> </div>
+    </div>
+    <!-- <form>
+          <label><input type="radio" name="mode" value="grouped"> Grouped</label>
+          <label><input type="radio" name="mode" value="stacked" checked> Stacked</label>
+    </form>  -->
+     <div id="utilization_chart"> </div>
+  </div>
+
+  <div class="col-lg-3"  style="color: white; margin-top: 10px; font-weight:600">  <i class="fa fa-sellsy"></i> EMISSIONS
+    <div id="emission_chart" style="margin-top: 18px"> </div>
+  </div>
+
+  <div class="col-lg-3"  style="color: white; margin-top: 10px; font-weight:600"> 
+    <div> <i class="fa fa-clock-o"> </i> WAITING TIME </div> 
+
+    <div>
+      <div style="display: inline-block; color: #FFFF00"> <i class="fa fa-child"></i> </div>
+      <div style="display: inline-block; color: #FF9900 "> <i class="fa fa-cube"></i> </div>
+    </div>
+    <div style="display: inline-block">  
+        <div id="waitTimePassenger"> </div> 
+    </div>
+
+    <div style="display: inline-block">   
+        <div id="waitTimeParcel"> </div> 
+    </div>  
+     </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-3" style="margin-top: 15px; margin-left: 20px; ">
+    
+    <p style="color: white; margin-top: 15px">
+      <label style="font-weight:600"> <i class="fa fa-rocket"></i>  PEV Fleet Size:</label> 
+      <input type="text" id="fleetSize" style="border:0; width: 70px; background-color: transparent; color:#ff66cc; font-weight:bold">       
+    </p>
+    <div id="sliderFleetSize"  style="margin-top: -10px"></div>
+    
+
+    <p style="color: white; margin-top: 15px">
+      <label style="font-weight:600"> <i class="fa fa-arrows-h"></i>  Max Trip Distance:</label> 
+      <input type="text" id="maxTripDist" style="border:0; width: 70px; background-color: transparent; color:#ff66cc; font-weight:bold; display: inline-block">        
+    </p>
+    <div id="sliderMaxTripDist"  style="margin-top: -10px"></div>
+
+    <p style="color: white; margin-top: 15px">
+      <label style="font-weight:600"> <i class="fa fa-cubes"></i>  Parcels:</label> 
+      <input type="text" id="parcelAmount" style="border:0; width: 70px; background-color: transparent; color:#ff66cc; font-weight:bold; display: inline-block">       
+    </p>
+    <div id="sliderParcelAmount"  style="margin-top: -10px"></div>
+
+    <p style="color: white; margin-top: 15px">
+      <label style="font-weight:600" > <i class="fa fa-tachometer"></i>  Simulation Speed:</label> 
+      <input type="text" id="simSpeed" style="border:0; width: 70px; background-color: transparent; color:#ff66cc; font-weight:bold; display: inline-block">       
+    </p>
+    <div id="sliderSimSpeed"  style="margin-top: -10px"></div>
+
+
+    <input type="button" class="btn  btn-xs" style="margin-top: 25px; width: 200px; background-color:#ff66cc; color: white" value="Re-Start">
+
+  </div>  
+
+
 
 </div>
 
 
-<div class="Row">
-  <div id="step-10" class="Column">
-  </div>
-  <div id="step-5" class="Column">
-  </div>
-  <div id="example" class="Column">
-  </div>
-</div>
 
 
-
-
-<!--<div id="trip-box" class="style">-->
-<!--	<div id="prompt">Please upload your file</div>-->
-<!--	<ol id="trip-list"></ol>-->
-<!--</div>-->
-
-<!-- 	<div>
-    <table id="data-box" class="style" style="border-spacing:0">
-      <tr style="line-height:20px;">
-        <td class="header"></td>
-        <td class="header">Current Trip Data /</td>
-        <td class="header">Total Trip :</td>
-      </tr>
-      <tr>
-        <td style="text-align: left;">Bike Time : </td>
-        <td><p id="c-bike-time">0sec</p></td>
-        <td><p id="bike-time">0sec</p></td>
-      </tr>
-      <tr>
-        <td style="text-align: left;">Bike Distance : </td>
-        <td><p id="c-bike-dist">0m</p></td>
-        <td><p id="bike-dist">0m</p></td>
-      </tr>
-      <tr>
-        <td style="text-align: left;">Drive Time : </td>
-        <td><p id="c-drive-time">0sec</p></td>
-        <td><p id="drive-time">0sec</p></td>
-      </tr>
-      <tr>
-        <td style="text-align: left;">Drive Distance : </td>
-        <td><p id="c-drive-dist">0m</p></td>
-        <td><p id="drive-dist">0m</p></td>
-      </tr>
-      <tr style="line-height:20px;">
-        <td class="header"></td>
-        <td class="header"></td>
-        <td class="header"></td>
-      </tr>
-      <tr>
-        <td style="text-align:left;">Taxi time :</td>
-        <td><p id="c-taxi-time">0sec</p></td>
-        <td><p id="t-taxi-time">0sec</p></td>
-      </tr>
-    </table>
-  </div> -->
-
-
+<!-- center -->
   
   <script>
   // console.log(localStorage.getItem("c_taxi_time"));
   // jQuery(function($) {
-    var names = ['Bike', 'Taxi', 'Bike & Taxi'],
+    var names = ['PEV', 'Taxi','Autonomous Uber'],
 
 
-    hotdogs = [8, 4, 9],
+    emissions = [8, 4, 9],
     chart,
-    width = 200,
+    width = 250,
     bar_height = 20,
     height = bar_height * names.length;
 
@@ -261,27 +161,21 @@
     .append('svg')
     .attr('class', 'chart')
     .attr('width', width)
-    .attr('height', height);
+    .attr('height', height); 
 
     /* step 2 */
     var x, y;
-
-    chart = d3.select($("#step-2")[0])
-    .append('svg')
-    .attr('class', 'chart')
-    .attr('width', width)
-    .attr('height', height);
-
+ 
     x = d3.scale.linear()
-    .domain([0, d3.max(hotdogs)])
+    .domain([0, d3.max(emissions)])
     .range([0, width]);
 
     y = d3.scale.ordinal()
-    .domain(hotdogs)
+    .domain(emissions)
     .rangeBands([0, height]);
 
     chart.selectAll("rect")
-    .data(hotdogs)
+    .data(emissions)
     .enter().append("rect")
     .attr("x", 0)
     .attr("y", y)
@@ -296,7 +190,7 @@
     .attr('height', height);
 
     chart.selectAll("rect")
-    .data(hotdogs)
+    .data(emissions)
     .enter().append("rect")
     .attr("x", 0)
     .attr("y", y)
@@ -304,7 +198,7 @@
     .attr("height", y.rangeBand());
 
     chart.selectAll("text")
-    .data(hotdogs)
+    .data(emissions)
     .enter().append("text")
     .attr("x", x)
     .attr("y", function(d){ return y(d) + y.rangeBand()/2; } )
@@ -314,7 +208,7 @@
     .text(String);
 
     /* step 4 */
-    var left_width = 100;
+    var left_width = 20;
 
     chart = d3.select($("#step-4")[0])
     .append('svg')
@@ -323,7 +217,7 @@
     .attr('height', height);
 
     chart.selectAll("rect")
-    .data(hotdogs)
+    .data(emissions)
     .enter().append("rect")
     .attr("x", left_width)
     .attr("y", y)
@@ -331,7 +225,7 @@
     .attr("height", y.rangeBand());
 
     chart.selectAll("text.score")
-    .data(hotdogs)
+    .data(emissions)
     .enter().append("text")
     .attr("x", function(d) { return x(d) + left_width; })
     .attr("y", function(d){ return y(d) + y.rangeBand()/2; } )
@@ -345,7 +239,7 @@
     .data(names)
     .enter().append("text")
     .attr("x", left_width / 2)
-    .attr("y", function(d, i){ return y(hotdogs[i]) + y.rangeBand()/2; } )
+    .attr("y", function(d, i){ return y(emissions[i]) + y.rangeBand()/2; } )
     .attr("dy", ".36em")
     .attr("text-anchor", "middle")
     .attr('class', 'name')
@@ -354,89 +248,88 @@
     /* step 5 */
     var gap = 2;
   // redefine y for adjusting the gap
-  y = d3.scale.ordinal()
-  .domain(hotdogs)
-  .rangeBands([0, (bar_height + 2 * gap) * names.length]);
+    y = d3.scale.ordinal()
+    .domain(emissions)
+    .rangeBands([0, (bar_height + 2 * gap) * names.length]);
 
 
-  chart = d3.select($("#step-5")[0])
-  .append('svg')
-  .attr('class', 'chart')
-  .attr('width', left_width + width + 40)
-  .attr('height', (bar_height + gap * 2) * names.length + 30)
-  .append("g")
-  .attr("transform", "translate(10, 20)");
+    chart = d3.select($("#emission_chart")[0])
+    .append('svg')
+    .attr('class', 'chart')
+    .attr('width', left_width + width + 40)
+    .attr('height', (bar_height + gap * 2) * names.length + 30)
+    .append("g")
+    .attr("transform", "translate(10, 20)");
 
-  chart.selectAll("line")
-  .data(x.ticks(d3.max(hotdogs)))
-  .enter().append("line")
-  .attr("x1", function(d) { return x(d) + left_width; })
-  .attr("x2", function(d) { return x(d) + left_width; })
-  .attr("y1", 0)
-  .attr("y2", (bar_height + gap * 2) * names.length);
+    chart.selectAll("line")
+    .data(x.ticks(d3.max(emissions)))
+    .enter().append("line")
+    .attr("x1", function(d) { return x(d) + left_width; })
+    .attr("x2", function(d) { return x(d) + left_width; })
+    .attr("y1", 0)
+    .attr("y2", (bar_height + gap * 2) * names.length);
 
-  chart.selectAll(".rule")
-  .data(x.ticks(d3.max(hotdogs)))
-  .enter().append("text")
-  .attr("class", "rule")
-  .attr("x", function(d) { return x(d) + left_width; })
-  .attr("y", 0)
-  .attr("dy", -6)
-  .attr("text-anchor", "middle")
-  .attr("font-size", 10)
-  .text(String);
+    chart.selectAll(".rule")
+    .data(x.ticks(d3.max(emissions)))
+    .enter().append("text")
+    .attr("class", "rule")
+    .attr("x", function(d) { return x(d) + left_width; })
+    .attr("y", 0)
+    .attr("dy", -6)
+    .attr("text-anchor", "middle")
+    .attr("font-size", 10)
+    .text(String);
 
-  chart.selectAll("rect")
-  .data(hotdogs)
-  .enter().append("rect")
-  .attr("x", left_width)
-  .attr("y", function(d) { return y(d) + gap; })
-  .attr("width", x)
-  .attr("height", bar_height);
+    chart.selectAll("rect")
+    .data(emissions)
+    .enter().append("rect")
+    .attr("x", left_width)
+    .attr("y", function(d) { return y(d) + gap; })
+    .attr("width", x)
+    .attr("height", bar_height);
 
-  chart.selectAll("text.score")
-  .data(hotdogs)
-  .enter().append("text")
-  .attr("x", function(d) { return x(d) + left_width; })
-  .attr("y", function(d, i){ return y(d) + y.rangeBand()/2; } )
-  .attr("dx", -5)
-  .attr("dy", ".36em")
-  .attr("text-anchor", "end")
-  .attr('class', 'score')
-  .text(String);
+    chart.selectAll("text.score")
+    .data(emissions)
+    .enter().append("text")
+    .attr("x", function(d) { return x(d) + left_width; })
+    .attr("y", function(d, i){ return y(d) + y.rangeBand()/2; } )
+    .attr("dx", -5)
+    .attr("dy", ".36em")
+    .attr("text-anchor", "end")
+    .attr('class', 'score')
+    .text(String);
 
-  chart.selectAll("text.name")
-  .data(names)
-  .enter().append("text")
-  .attr("x", left_width / 2)
-  .attr("y", function(d, i){ return y(hotdogs[i]) + y.rangeBand()/2; } )
-  .attr("dy", ".36em")
-  .attr("text-anchor", "middle")
-  .attr('class', 'name')
-  .text(String);
+    chart.selectAll("text.name")
+    .data(names)
+    .enter().append("text")
+    .attr("x", left_width / 2)
+    .attr("y", function(d, i){ return y(emissions[i]) + y.rangeBand()/2; } )
+    .attr("dy", ".36em")
+    .attr("text-anchor", "middle")
+    .attr('class', 'name')
+    .text(String);
 
-// }(jQuery));
-</script>
-
+ </script>
 
 
-<form>
-  <!-- <label><input type="radio" name="mode" value="grouped"> Grouped</label>
-  <label><input type="radio" name="mode" value="stacked" checked> Stacked</label> -->
-</form>
-<!-- <script src="//d3js.org/d3.v3.min.js"></script> -->
+<!-- Utilization Chart -->
+
 <script>
-
 var n = 2, // number of layers
-    m = 15, // number of samples per layer
+    m = 24, // number of samples per layer
+
+    parcel_color = "#FF9900", 
+    passenger_color = "#FFFF00",
+
     stack = d3.layout.stack(),
     layers = stack(d3.range(n).map(function() { return bumpLayer(m, .1); })),
     yGroupMax = d3.max(layers, function(layer) { return d3.max(layer, function(d) { return d.y; }); }),
     yStackMax = d3.max(layers, function(layer) { return d3.max(layer, function(d) { return d.y0 + d.y; }); });
 
-    var margin = {top: 40, right: 10, bottom: 20, left: 10},
-    width = 240 - margin.left - margin.right,
-    height = 125 - margin.top - margin.bottom;
+    var margin = {top: 30, right: 10, bottom: 20, left: 10},
+    width = 280;
+    // height = 125 - margin.top - margin.bottom;
+    height = 65;
 
     var x = d3.scale.ordinal()
     .domain(d3.range(m))
@@ -448,7 +341,7 @@ var n = 2, // number of layers
 
     var color = d3.scale.linear()
     .domain([0, n - 1])
-    .range(["#6699ff", "#b3ccff"]);
+    .range([parcel_color, passenger_color]);
 
     var xAxis = d3.svg.axis()
     .scale(x)
@@ -456,7 +349,7 @@ var n = 2, // number of layers
     .tickPadding(6)
     .orient("bottom");
 
-    var svg = d3.select($("#step-10")[0]).append("svg")
+    var svg = d3.select($("#utilization_chart")[0]).append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
@@ -546,11 +439,20 @@ function bumpLayer(n, o) {
   </script>
 
   
+
+
+
+<!-- WAITING TIME -->
+
+<!-- right 1-->
+
   <script type="text/javascript">
 
-  var w = 200;
+  var w = 120;
   var h = 80;
 
+  var parcel_color = "#FF9900";
+  var passenger_color = "#FFCC00";
 
   var dataset = [ 
   { key: 0, value: 5 },
@@ -575,31 +477,34 @@ function bumpLayer(n, o) {
   };
 
 
-//Create SVG element
-var svg = d3.select($("#example")[0])
-.append("svg")
-.attr("width", w)
-.attr("height", h);
+  //Create SVG element
+  var svg = d3.select($("#waitTimePassenger")[0])
+  .append("svg")
+  .attr("width", w)
+  .attr("height", h);
 
-//Create bars
-svg.selectAll("rect")
-.data(dataset, key)
-.enter()
-.append("rect")
-.attr("x", function(d, i) {
-  return xScale(i);
-})
-.attr("y", function(d) {
-  return h - yScale(d.value);
-})
-.attr("width", xScale.rangeBand())
-.attr("height", function(d) {
-  return yScale(d.value);
-})
-.attr("fill", function(d) {
-  // return "rgb(0, 0, " + (d.value * 10) + ")";
-  return "rgb(51, 153, 255)"
-})
+  //Create bars
+  svg.selectAll("rect")
+  .data(dataset, key)
+  .enter()
+  .append("rect")
+  .attr("x", function(d, i) {
+    return xScale(i);
+  })
+  .attr("y", function(d) {
+    return h - yScale(d.value);
+  })
+  .attr("width", xScale.rangeBand())
+  .attr("height", function(d) {
+    return yScale(d.value);
+  })
+  .attr("fill", "#FFFF00")
+
+  // var xAxis = d3.svg.axis()
+  // .scale(x)
+  // .tickSize(0)
+  // .tickPadding(6)
+  // .orient("bottom");
 
   //Tooltip
   .on("mouseover", function(d) {
@@ -620,34 +525,34 @@ svg.selectAll("rect")
     d3.select("#tooltip").classed("hidden", true);
   })  ;
 
-//Create labels
-svg.selectAll("text")
-.data(dataset, key)
-.enter()
-.append("text")
-.text(function(d) {
-  return d.value;
-})
-.attr("text-anchor", "middle")
-.attr("x", function(d, i) {
-  return xScale(i) + xScale.rangeBand() / 2;
-})
-.attr("y", function(d) {
-  return h - yScale(d.value) + 14;
-})
-.attr("font-family", "sans-serif") 
-.attr("font-size", "11px")
-.attr("fill", "white");
+  //Create labels
+  svg.selectAll("text")
+  .data(dataset, key)
+  .enter()
+  .append("text")
+  .text(function(d) {
+    return d.value;
+  })
+  .attr("text-anchor", "middle")
+  .attr("x", function(d, i) {
+    return xScale(i) + xScale.rangeBand() / 2;
+  })
+  .attr("y", function(d) {
+    return h - yScale(d.value) + 14;
+  })
+  .attr("font-family", "sans-serif") 
+  .attr("font-size", "11px")
+  .attr("fill", "white");
 
-var sortOrder = false;
-var sortBars = function () {
-  sortOrder = !sortOrder;
+  var sortOrder = false;
+  var sortBars = function () {
+    sortOrder = !sortOrder;
 
-  sortItems = function (a, b) {
-    if (sortOrder) {
-      return a.value - b.value;
-    }
-    return b.value - a.value;
+    sortItems = function (a, b) {
+      if (sortOrder) {
+        return a.value - b.value;
+      }
+      return b.value - a.value;
   };
 
   svg.selectAll("rect")
@@ -682,9 +587,8 @@ var sortBars = function () {
 // Add the onclick callback to the button
 d3.select("#sort").on("click", sortBars);
 d3.select("#reset").on("click", reset);
+
 function randomSort() {
-
-
   svg.selectAll("rect")
   .sort(sortItems)
   .transition()
@@ -714,6 +618,7 @@ function randomSort() {
     return h - yScale(d.value) + 14;
   });
 }
+
 function reset() {
   svg.selectAll("rect")
   .sort(function(a, b){
@@ -755,13 +660,12 @@ function reset() {
 
 </script>
 
-
+<!-- right 2-->
 
  <script type="text/javascript">
 
-  var w = 200;
-  var h = 80;
-
+  var w = 120;
+  var h = 100;
 
   var dataset = [ 
   { key: 0, value: 5 },
@@ -787,7 +691,7 @@ function reset() {
 
 
 //Create SVG element
-var svg = d3.select($("#example")[0])
+var svg = d3.select($("#waitTimeParcel")[0])
 .append("svg")
 .attr("width", w)
 .attr("height", h);
@@ -807,10 +711,7 @@ svg.selectAll("rect")
 .attr("height", function(d) {
   return yScale(d.value);
 })
-.attr("fill", function(d) {
-  // return "rgb(0, 0, " + (d.value * 10) + ")";
-  return "rgb(51, 153, 255)"
-})
+.attr("fill", "#FFCC00")
 
   //Tooltip
   .on("mouseover", function(d) {
@@ -925,6 +826,7 @@ function randomSort() {
     return h - yScale(d.value) + 14;
   });
 }
+
 function reset() {
   svg.selectAll("rect")
   .sort(function(a, b){
