@@ -275,6 +275,16 @@ function drawPaths(paths, origin, id) {
     var marker = new Maps.Marker({
         position: origin,
         map: map,
+        icon: {
+            path: fontawesome.markers.CHILD,
+            scale: 0.5,
+            strokeWeight: 0.1,
+            strokeColor: '#FFFF00',
+            strokeOpacity: 1,
+            fillColor: '#FFFF00',
+            fillOpacity: 1
+        },
+        clickable: false,
     });
     marker.info = {};
     allLines[id] = [];
@@ -474,8 +484,8 @@ document.getElementById("driveBtn").disabled = false;
 window.onload = function() {
     document.getElementById("trip-file").addEventListener("change", fileChanged, false);
     map = new Maps.Map(document.getElementById('map-canvas'), {
-      zoom: 12,
-      center: new Maps.LatLng(42.3601, -71.0589),
+      zoom: 13,
+      center: new Maps.LatLng(42.367700, -71.089783),
       mapTypeId: Maps.MapTypeId.ROADMAP,
       mapTypeControl: false,
       streetViewControl: false,
@@ -489,7 +499,7 @@ window.onload = function() {
 
 
 
-    var darkMap = [
+var darkMap = [
     {
         "featureType": "all",
         "elementType": "labels.text.fill",
