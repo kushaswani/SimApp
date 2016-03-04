@@ -51,8 +51,6 @@
 
 
 
- 
-
 
 <div class="row">
   <div class="col-lg-2"  style="color: white;  margin-top: 0px; margin-left: 20px"> 
@@ -73,15 +71,20 @@
     <div>
       <div style="display: inline-block; color: #FFFF00"> <i class="fa fa-child"></i> </div>
       <div style="display: inline-block; color: #FF9900 "> <i class="fa fa-cube"></i> </div>
+      <div style="display: inline-block">
+        <div class="chartControl">
+              <div style="display: inline-block; font-size: .8em"><input type="radio" name="mode" value="grouped"> Combined</div>
+              <div style="display: inline-block; font-size: .8em"><input type="radio" name="mode" value="stacked" checked> Split</div>
+        </div> 
+      </div>
+     
+
     </div>
-    <!-- <form>
-          <label><input type="radio" name="mode" value="grouped"> Grouped</label>
-          <label><input type="radio" name="mode" value="stacked" checked> Stacked</label>
-    </form>  -->
      <div id="utilization_chart"> </div>
   </div>
 
-  <div class="col-lg-3"  style="color: white; margin-top: 10px; font-weight:600">  <i class="fa fa-sellsy"></i> EMISSIONS
+  <div class="col-lg-3"  style="color: white; margin-top: 10px; font-weight:600">  
+    <i class="fa fa-sellsy"></i> EMISSIONS
     <div id="emission_chart" style="margin-top: 18px"> </div>
   </div>
 
@@ -148,10 +151,10 @@
   <script>
   // console.log(localStorage.getItem("c_taxi_time"));
   // jQuery(function($) {
-    var names = ['PEV', 'Taxi','Autonomous Uber'],
+    var names = ['PEV', 'Taxi','Robot Uber'],
 
 
-    emissions = [8, 4, 9],
+    emissions = [2, 10, 5],
     chart,
     width = 250,
     bar_height = 20,
@@ -209,7 +212,7 @@
     .text(String);
 
     /* step 4 */
-    var left_width = 20;
+    var left_width = 30;
 
     chart = d3.select($("#step-4")[0])
     .append('svg')
@@ -378,6 +381,8 @@ var n = 2, // number of layers
     svg.append("g")
     .attr("class", "x axis")
     .attr("transform", "translate(0," + height + ")")
+    .attr("fill", "#ffffff")
+    .attr("font-size", "40px")
     .call(xAxis);
 
     d3.selectAll("input").on("change", change);
