@@ -150,12 +150,16 @@
 <!-- center -->
   
   <script>
+  // emission_chart
+      
   // console.log(localStorage.getItem("c_taxi_time"));
   // jQuery(function($) {
-    var names = ['PEV', 'Taxi','Robot Uber'],
+      
+function drawEmissionChart(emissions) {
+      var names = ['PEV', 'Taxi','Robot Uber'],
 
 
-    emissions = [2, 10, 5],
+    // emissions = [2, 10, 5],
     chart,
     width = 250,
     bar_height = 20,
@@ -256,10 +260,11 @@
     y = d3.scale.ordinal()
     .domain(emissions)
     .rangeBands([0, (bar_height + 2 * gap) * names.length]);
-
+    
+    d3.select("#emissions_data").remove();
 
     chart = d3.select($("#emission_chart")[0])
-    .append('svg')
+    .append('svg').attr("id", "emissions_data")
     .attr('class', 'chart')
     .attr('width', left_width + width + 40)
     .attr('height', (bar_height + gap * 2) * names.length + 30)
@@ -293,6 +298,7 @@
     .attr("width", x)
     .attr("height", bar_height);
 
+    // TODO see if we can round the labels to a couple decimal places
     chart.selectAll("text.score")
     .data(emissions)
     .enter().append("text")
@@ -313,7 +319,10 @@
     .attr("text-anchor", "middle")
     .attr('class', 'name')
     .text(String);
+};
 
+      console.log(localStorage.getItem("emissions_coeffs"));
+      drawEmissionChart(emissions_coeffs);
  </script>
 
 
