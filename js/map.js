@@ -81,7 +81,15 @@ $(function() {
     $( "#simSpeed" ).val(  $( "#sliderSimSpeed" ).slider( "value" ) + "x"  );
 });
 
+function setMapNewbury() {
+    map.center = new Maps.LatLng(42.3519319, -71.0827417);
+    map.setZoom(16);
+}
 
+function setMapBoston() {
+    map.center = new Maps.LatLng(42.367700, -71.089783);
+    map.setZoom(13)
+}
 
 function day() {
     var time = 0;
@@ -495,7 +503,8 @@ window.onload = function() {
     document.getElementById("trip-file").value = "";
     document.getElementById("bothBtn").disabled = true;
     document.getElementById("bikeBtn").disabled = true;
-    document.getElementById("driveBtn").disabled = true;};
+    document.getElementById("driveBtn").disabled = true;
+};
 
 
 
