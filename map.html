@@ -308,7 +308,8 @@ function drawEmissionChart(emissions) {
     .attr("dy", ".36em")
     .attr("text-anchor", "end")
     .attr('class', 'score')
-    .text(String);
+    //.text(String);
+    .text(d3.format("2.2f"));
 
     chart.selectAll("text.name")
     .data(names)
@@ -321,7 +322,7 @@ function drawEmissionChart(emissions) {
     .text(String);
 };
 
-      console.log(localStorage.getItem("emissions_coeffs"));
+      // console.log(localStorage.getItem("emissions_coeffs"));
       drawEmissionChart(emissions_coeffs);
  </script>
 

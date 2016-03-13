@@ -19,7 +19,7 @@ var taxiTime = 0;
 var allLines = {};
 var mode = {};
 
-var emissions = [0, 0, 0];
+var emissions = [2, 10, 5];
 var tot_distances = [0, 0, 0];
 var emissions_coeffs = [2, 10, 5];
 
@@ -418,17 +418,17 @@ function calculateEmissions(paths) {
     console.log(paths)
     for (var i = 0; i < paths.length; i++) {
     if (paths[i].request.travelMode === Maps.TravelMode.BICYCLING) {
-        tot_distances[0] += getRouteDistance(paths[i].routes[0]);
+        tot_distances[0] = getRouteDistance(paths[i].routes[0]);
     } else if (paths[i].request.travelMode === Maps.TravelMode.DRIVING) {
-        tot_distances[1] += getRouteDistance(paths[i].routes[0]);
-        tot_distances[2] += getRouteDistance(paths[i].routes[0]);
+        tot_distances[1] = getRouteDistance(paths[i].routes[0]);
+        tot_distances[2] = getRouteDistance(paths[i].routes[0]);
     }
     }
     
     for (var i = 0; i < emissions.length; i++) {
-        emissions[i] = tot_distances[i] * emissions_coeffs[i]
+        emissions[i] = tot_distances[i] * emissions_coeffs[i] / 10000
     }
-    normalize_emissions()
+  //  normalize_emissions()
 }
 
 function normalize_emissions() {
