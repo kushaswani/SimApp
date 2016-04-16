@@ -1,0 +1,52 @@
+Architecture
+
+1. Simulation
+	The simulation takes tasks input in the form of 
+	{pickup time, pickup location, dropoff location} data. We may
+	augment this with person/package and other metadata to facilitate
+	drawing the tasks on the front end.
+	[TODO: distinguish packages and people and optimize the 
+	simultaneous case]
+
+	The simulation assigns (TODO: algorithm) PEVs efficiently to fares
+
+	To work efficiently, the simulation does not step through 
+	timesteps but instead keeps track of when resources will be freed
+	(i.e. when PEVs will drop off their passengers/packages) and jumps
+	forward to the next fare. We can calculate retrospectively where 
+	PEVs could have gone to as needed. Hopefully we can retain this 
+	once we introduce charging as a simulated concern.
+
+	The simulation keeps a log of pickups, dropoffs, PEV movements, 
+	and statistics which it sends to the draw module
+
+2. Drawing Module
+	The Drawing module doesn't actually draw, but it does translate 
+	the simulation events into a serializable format that can easily 
+	be drawn by the front end. The drawer must provide movements for 
+	all on-screen entities as well as locations for icons to appear 
+	and statistics with which to update the chart gui
+
+3. Front end
+	Periodically queries the back end for more drawing data. Draws 
+	according to what it receives. Can send requests to the back end 
+	to modify simulation parameters like fleet size, speed, and demand
+
+4. Route-finding
+	Route finding will be done using the Google Maps directions API. 
+	We may need to cache results to reduce daily API queries.
+
+	It can occur in several places. We can route-find when we produce 
+	trips and do a lot of work ahead of time. This might make the most
+	sense.
+
+	We will need to route-find between dropoff locations and the next 
+	pickup location, or charging stations if we ever implement those.
+
+	We may need to route-find in the assignment step, or we may be 
+	able to use less expensive heuristics.
+
+5. Generating input
+	For the time being we can use the extensive taxi data we have to 
+	generate input. We can in the future figure out how to randomly 
+	generate pretty data.

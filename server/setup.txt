@@ -1,0 +1,33 @@
+To run this, you will need:
+- A google api key
+- The googlemaps api python module
+- geopy
+
+Here's how:
+- first install the python package installer pip if you haven't already
+  On a mac this is really easy. Just open up terminal and run
+
+    sudo easy_install pip
+
+- Once pip is going, you can get geopy with:
+
+    pip install geopy
+
+  (you might have to do sudo pip install geopy)
+
+- And you can get the googlemaps python api 
+
+     pip install -U googlemaps
+
+  (again, you might have to sudo it)
+
+- Getting your google api key is described on this page:
+  https://github.com/googlemaps/google-maps-services-python
+  and you'll want to put it in a file called 
+
+    google_api_key
+
+- from the repo top level folder, run gen_locs.py to scrape
+  a bunch of trip start and end points from the taxi data
+  so we can run good simulations. The variation of the trips
+  will get better as you run more simulations

@@ -5,7 +5,7 @@
 <title>PEV Deployment Simulator</title>
 
 
-<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDLnF0RwcwqWQtnZwyjwe0V0qJjmJmnH1c"></script>
+<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDLnF0RwcwqWQtnZwyjwe0V0qJjmJmnH1c&libraries=geometry,visualization"></script>
 <script type="text/javascript" src="lib/jquery.js"></script>
 <script type="text/javascript" src="lib/papaparse.min.js"></script>
 <script type="text/javascript" src="js/map.js"></script>
@@ -32,8 +32,8 @@
   
 
 <!--   File Loading Menu   -->  
-  
-  <div id="form" class="style-upper-right">
+  <!-- TODO: upload file to server for sim -->
+  <div id="form" class="style-upper-right" hidden="True">
     <div id="input">
       <form id="taxi-data">
          <div>
@@ -55,12 +55,12 @@
 <div class="row">
   <div class="col-lg-2"  style="color: white;  margin-top: 0px; margin-left: 20px"> 
     <h3 style="margin-top:10px; font-style:italic">PEV-SIMULATOR</h3>
-    <p style="font-weight:300; font-style:italic; font-size:1em; ">How many Shared Autonomous Vehicles do we need in a city? </p>
+    <p style="font-weight:300; font-style:italic; font-size:1em; ">How many Autonomous Hybrid Shared Vehicles do we need in a city? </p>
     <div style="margin-top: 20px; font-size: .9em" id="btn-group">
-          <input type="button" class="btn btn-xs  mode" style="background-color:#ff66cc; color: white" value="Boston" onclick="setMapBoston()">
-          <input type="button" class="btn btn-xs  mode" style="background-color:#ff66cc; color: white" value="Newbury" onclick="setMapNewbury()">
-          <input type="button" class="btn btn-xs  mode" style="background-color:#ff66cc; color: white" value="Andorra">
-          <input type="button" class="btn btn-xs  mode" style="background-color:#ff66cc; color: white" value="Taipei">               
+          <input type="button" class="btn btn-xs  mode" style="background-color: transparent; border-color:#ff66cc; color: #ff66cc" value="Boston" onclick="setMapBoston()">
+          <input type="button" class="btn btn-xs  mode" style="background-color: transparent; border-color:#ff66cc; color: #ff66cc" value="Newbury" onclick="setMapNewbury()">
+<!--           <input type="button" class="btn btn-xs  mode" style="background-color:#ff66cc; color: white" value="Andorra">
+          <input type="button" class="btn btn-xs  mode" style="background-color:#ff66cc; color: white" value="Taipei">    -->            
          <!--  <input type="button" class="btn btn-info btn-xs  mode" value="Hamburg"> -->
     </div>
   </div>
@@ -136,7 +136,19 @@
     <div id="sliderSimSpeed"  style="margin-top: -10px"></div>
 
 
-    <input type="button" class="btn  btn-xs" style="margin-top: 25px; width: 200px; background-color:#ff66cc; color: white" value="Re-Start">
+    <p style="color: white; margin-top: 15px">
+      <label style="font-weight:600" > <i class="fa fa-bullseye"></i> O/D Heatmap :</label>       
+    </p>
+
+    <div id="heatmap"  style="margin-top: -10px"></div>
+    <input type="button" class="btn  btn-xs" id="heatmapPassBtn" style="margin-top: 0px; width: 98px; background-color: transparent; border-color:white; color: white" value="Passengers" onclick="togglePassHeatmap()">
+
+    <input type="button" class="btn  btn-xs" id="heatmapParcBtn" style="margin-top: 0px; width: 98px; background-color: transparent; border-color:white; color: white" value="Parcels" onclick="toggleParcHeatmap()">
+    
+    <br>
+ 
+    <input type="button" class="btn  btn-xs" style="font-weight:600; margin-top: 25px; width: 200px; background-color: transparent; border-color:#ff66cc; color: #ff66cc" value="Run Sim" onclick="fleet_sim()">
+      <input type="button" class="btn  btn-xs" style="font-weight:600; margin-top: 10px; width: 200px; background-color: transparent; border-color:#ff66cc; color: #ff66cc" value="Test Sim" onclick="test_fleet_sim()">
 
   </div>  
 
@@ -156,14 +168,14 @@
   // jQuery(function($) {
       
 function drawEmissionChart(emissions) {
-      var names = ['PEV', 'Taxi','Robot Uber'],
+    var names = ['PEV', 'Taxi','Uber'],
 
 
-    // emissions = [2, 10, 5],
-    chart,
-    width = 250,
-    bar_height = 20,
-    height = bar_height * names.length;
+        //emissions = [2, 10, 5],
+        chart,
+        width = 225,
+        bar_height = 20,
+        height = bar_height * names.length;
 
     /* step 1 */
     chart = d3.select($("#step-1")[0])
@@ -191,6 +203,9 @@ function drawEmissionChart(emissions) {
     .attr("width", x)
     .attr("height", bar_height);
 
+
+    var xAxis = d3.svg.axis()
+    .scale(x)
     /* step 3 */
     chart = d3.select($("#step-3")[0])
     .append('svg')
@@ -240,7 +255,7 @@ function drawEmissionChart(emissions) {
     .attr("y", function(d){ return y(d) + y.rangeBand()/2; } )
     .attr("dx", -5)
     .attr("dy", ".36em")
-    .attr("text-anchor", "end")
+    .attr("text-anchor", "start")
     .attr('class', 'score')
     .text(String);
 
@@ -250,7 +265,7 @@ function drawEmissionChart(emissions) {
     .attr("x", left_width / 2)
     .attr("y", function(d, i){ return y(emissions[i]) + y.rangeBand()/2; } )
     .attr("dy", ".36em")
-    .attr("text-anchor", "middle")
+    .attr("text-anchor", "start")
     .attr('class', 'name')
     .text(String);
 
@@ -263,6 +278,7 @@ function drawEmissionChart(emissions) {
     
     d3.select("#emissions_data").remove();
 
+    // TODO
     chart = d3.select($("#emission_chart")[0])
     .append('svg').attr("id", "emissions_data")
     .attr('class', 'chart')
@@ -271,24 +287,24 @@ function drawEmissionChart(emissions) {
     .append("g")
     .attr("transform", "translate(10, 20)");
 
-    chart.selectAll("line")
-    .data(x.ticks(d3.max(emissions)))
-    .enter().append("line")
-    .attr("x1", function(d) { return x(d) + left_width; })
-    .attr("x2", function(d) { return x(d) + left_width; })
-    .attr("y1", 0)
-    .attr("y2", (bar_height + gap * 2) * names.length);
+    // chart.selectAll("line")
+    // .data(x.ticks(d3.max(emissions)))
+    // .enter().append("line")
+    // .attr("x1", function(d) { return x(d) + left_width; })
+    // .attr("x2", function(d) { return x(d) + left_width; })
+    // .attr("y1", 0)
+    // .attr("y2", (bar_height + gap * 2) * names.length);
 
-    chart.selectAll(".rule")
-    .data(x.ticks(d3.max(emissions)))
-    .enter().append("text")
-    .attr("class", "rule")
-    .attr("x", function(d) { return x(d) + left_width; })
-    .attr("y", 0)
-    .attr("dy", -6)
-    .attr("text-anchor", "middle")
-    .attr("font-size", 10)
-    .text(String);
+    // chart.selectAll(".rule")
+    // .data(x.ticks(d3.max(emissions)))
+    // .enter().append("text")
+    // .attr("class", "rule")
+    // .attr("x", function(d) { return x(d) + left_width; })
+    // .attr("y", 0)
+    // .attr("dy", -6)
+    // .attr("text-anchor", "middle")
+    // .attr("font-size", 10)
+    // .text(String);
 
     chart.selectAll("rect")
     .data(emissions)
@@ -309,7 +325,8 @@ function drawEmissionChart(emissions) {
     .attr("text-anchor", "end")
     .attr('class', 'score')
     //.text(String);
-    .text(d3.format("2.2f"));
+    .text(d3.format("2.2f"))
+    .attr("transform", "translate(30, 0)");
 
     chart.selectAll("text.name")
     .data(names)
@@ -323,23 +340,27 @@ function drawEmissionChart(emissions) {
 };
 
       // console.log(localStorage.getItem("emissions_coeffs"));
-      drawEmissionChart(emissions_coeffs);
+     // drawEmissionChart(emissions_coeffs);
  </script>
 
 
 <!-- Utilization Chart -->
 
 <script>
-var n = 2, // number of layers
-    m = 24, // number of samples per layer
+    var n = 2, // number of layers
+        m = 24, // number of samples per layer
 
-    parcel_color = "#FF9900", 
-    passenger_color = "#FFFF00",
+        parcel_color = "#FF9900", 
+        passenger_color = "#FFFF00",
 
-    stack = d3.layout.stack(),
-    layers = stack(d3.range(n).map(function() { return bumpLayer(m, .1); })),
-    yGroupMax = d3.max(layers, function(layer) { return d3.max(layer, function(d) { return d.y; }); }),
-    yStackMax = d3.max(layers, function(layer) { return d3.max(layer, function(d) { return d.y0 + d.y; }); });
+        stack = d3.layout.stack(),
+        layers = stack(d3.range(n).map(function() { return bumpLayer(m, .1); }));
+    
+function drawUtil(layers) {
+    
+    var yGroupMax = d3.max(layers, function(layer) { return d3.max(layer, function(d) { return d.y; }); }),
+        yStackMax = d3.max(layers, function(layer) { return d3.max(layer, function(d) { return d.y0 + d.y; }); });
+    
 
     var margin = {top: 30, right: 10, bottom: 20, left: 10},
     width = 280;
@@ -363,8 +384,11 @@ var n = 2, // number of layers
     .tickSize(0)
     .tickPadding(6)
     .orient("bottom");
+    
+    d3.select("#util_data").remove();
 
     var svg = d3.select($("#utilization_chart")[0]).append("svg")
+    .attr("id", "util_data")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
@@ -401,7 +425,7 @@ var n = 2, // number of layers
     var timeout = setTimeout(function() {
       d3.select("input[value=\"grouped\"]").property("checked", true).each(change);
     }, 2000);
-
+    
     function change() {
       clearTimeout(timeout);
       if (this.value === "stacked") transitionGrouped();
@@ -434,6 +458,9 @@ var n = 2, // number of layers
       .attr("width", x.rangeBand());
     }
 
+}
+
+    
 // Inspired by Lee Byron's test data generator.
 function bumpLayer(n, o) {
 
@@ -472,205 +499,121 @@ function bumpLayer(n, o) {
   var passenger_color = "#FFCC00";
 
   var dataset = [ 
-  { key: 0, value: 5 },
-  { key: 1, value: 10 },
-  { key: 2, value: 13 },
-  { key: 3, value: 19 },
-  { key: 4, value: 21 },
-  { key: 5, value: 25 },
-  { key: 6, value: 22 },
-  { key: 7, value: 18 },
-  { key: 8, value: 15 } ];
-  var xScale = d3.scale.ordinal()
-  .domain(d3.range(dataset.length))
-  .rangeRoundBands([0, w], 0.05); 
-
-  var yScale = d3.scale.linear()
-  .domain([0, d3.max(dataset, function(d) {return d.value;})])
-  .range([0, h]);
+    { key: 0, value: 0 },
+    { key: 5, value: 0 },
+    { key: 10, value: 0 },
+    { key: 15, value: 0 },
+    { key: 20,value: 0 },
+    { key: 25, value: 0 },
+    { key: 30, value: 0 },
+    { key: 35, value: 0 }];
 
   var key = function(d) {
     return d.key;
   };
 
+    var xScale = d3.scale.ordinal()
+    .domain(d3.range(0, 40, 5))
+    .rangeRoundBands([0, w], 0.05); 
 
-  //Create SVG element
+    var yScale = d3.scale.linear()
+    .domain([0, d3.max(dataset, function(d) {return d.value;})])
+    .range([0, h]);
+
   var svg = d3.select($("#waitTimePassenger")[0])
-  .append("svg")
-  .attr("width", w)
-  .attr("height", h);
-
-  //Create bars
-  svg.selectAll("rect")
-  .data(dataset, key)
-  .enter()
-  .append("rect")
-  .attr("x", function(d, i) {
-    return xScale(i);
-  })
-  .attr("y", function(d) {
-    return h - yScale(d.value);
-  })
-  .attr("width", xScale.rangeBand())
-  .attr("height", function(d) {
-    return yScale(d.value);
-  })
-  .attr("fill", "#FFFF00")
-
-  // var xAxis = d3.svg.axis()
-  // .scale(x)
-  // .tickSize(0)
-  // .tickPadding(6)
-  // .orient("bottom");
-
-  //Tooltip
-  .on("mouseover", function(d) {
-    //Get this bar's x/y values, then augment for the tooltip
-    var xPosition = parseFloat(d3.select(this).attr("x")) + xScale.rangeBand() / 2;
-    var yPosition = parseFloat(d3.select(this).attr("y")) + 14;
-    
-    //Update Tooltip Position & value
-    d3.select("#tooltip")
-    .style("left", xPosition + "px")
-    .style("top", yPosition + "px")
-    .select("#value")
-    .text(d.value);
-    d3.select("#tooltip").classed("hidden", false)
-  })
-  .on("mouseout", function() {
-    //Remove the tooltip
-    d3.select("#tooltip").classed("hidden", true);
-  })  ;
-
-  //Create labels
-  svg.selectAll("text")
-  .data(dataset, key)
-  .enter()
-  .append("text")
-  .text(function(d) {
-    return d.value;
-  })
-  .attr("text-anchor", "middle")
-  .attr("x", function(d, i) {
-    return xScale(i) + xScale.rangeBand() / 2;
-  })
-  .attr("y", function(d) {
-    return h - yScale(d.value) + 14;
-  })
-  .attr("font-family", "sans-serif") 
-  .attr("font-size", "11px")
-  .attr("fill", "white");
-
-  var sortOrder = false;
-  var sortBars = function () {
-    sortOrder = !sortOrder;
-
-    sortItems = function (a, b) {
-      if (sortOrder) {
-        return a.value - b.value;
-      }
-      return b.value - a.value;
-  };
+    .append("svg")
+    .attr("width", w)
+    .attr("height", h+40);
 
   svg.selectAll("rect")
-  .sort(sortItems)
-  .transition()
-  .delay(function (d, i) {
-    return i * 50;
-  })
-  .duration(1000)
-  .attr("x", function (d, i) {
-    return xScale(i);
-  });
+    .data(dataset, key)
+    .enter()
+    .append("rect")
+    .attr("x", function(d, i) {
+      return xScale(i);
+    })
+    .attr("y", function(d) {
+      return h - yScale(d.value);
+    })
+    .attr("width", xScale.rangeBand())
+    .attr("height", function(d) {
+      return yScale(d.value);
+    })
+    .attr("fill", "#FFFF00")
 
-  svg.selectAll('text')
-  .sort(sortItems)
-  .transition()
-  .delay(function (d, i) {
-    return i * 50;
-  })
-  .duration(1000)
-  .text(function (d) {
-    return d.value;
-  })
-  .attr("text-anchor", "middle")
-  .attr("x", function (d, i) {
-    return xScale(i) + xScale.rangeBand() / 2;
-  })
-  .attr("y", function (d) {
-    return h - yScale(d.value) + 14;
-  });
-};
-// Add the onclick callback to the button
-d3.select("#sort").on("click", sortBars);
-d3.select("#reset").on("click", reset);
+          //Create labels
+      svg.selectAll("text")
+      .data(dataset, key)
+      .enter()
+      .append("text")
+      .text(function(d) {
+        if (d.value == 0) return "";
+        return d.value;
+      })
+      .attr("text-anchor", "middle")
+      .attr("x", function(d, i) {
+        return xScale(5*i) + xScale.rangeBand() / 2;
+      })
+      .attr("y", function(d) {
+        return h - yScale(d.value) + 14;
+      })
+      .attr("font-family", "sans-serif") 
+      .attr("font-size", "11px")
+      .attr("fill", "white")
+      .attr("transform", "translate(0,-15)");
 
-function randomSort() {
-  svg.selectAll("rect")
-  .sort(sortItems)
-  .transition()
-  .delay(function (d, i) {
-    return i * 50;
-  })
-  .duration(1000)
-  .attr("x", function (d, i) {
-    return xScale(i);
-  });
+    var xAxis = d3.svg.axis()
+    .scale(xScale)
+    .tickSize(0)
+    .tickPadding(6)
+    .orient("bottom");
 
-  svg.selectAll('text')
-  .sort(sortItems)
-  .transition()
-  .delay(function (d, i) {
-    return i * 50;
-  })
-  .duration(1000)
-  .text(function (d) {
-    return d.value;
-  })
-  .attr("text-anchor", "middle")
-  .attr("x", function (d, i) {
-    return xScale(i) + xScale.rangeBand() / 2;
-  })
-  .attr("y", function (d) {
-    return h - yScale(d.value) + 14;
-  });
+    svg.append("g")
+    .call(xAxis)
+    .attr("transform", "translate(0, 100)")
+    .attr("class", "x axis")
+    .attr("fill", "white");
+
+  function drawPersonWaitTime(dataset) {
+
+    yScale = d3.scale.linear()
+    .domain([0, d3.max(dataset, function(d) {return d.value;})])
+    .range([0, h]);
+
+    //Create bars
+    svg.selectAll("rect")
+    .data(dataset, key)
+    .attr("x", function(d, i) {
+      return xScale(5*i);
+    })
+    .attr("y", function(d) {
+      return h+20 - yScale(d.value);
+    })
+    .attr("width", xScale.rangeBand())
+    .attr("height", function(d) {
+      return yScale(d.value);
+    })
+    .attr("fill", "#FFFF00")
+
+      //Create labels
+      svg.selectAll("text")
+      .data(dataset, key)
+      .text(function(d) {
+        if (d.value == 0) return "";
+        return d.value;
+      })
+      .attr("text-anchor", "middle")
+      .attr("x", function(d, i) {
+        return xScale(5*i) + xScale.rangeBand() / 2;
+      })
+      .attr("y", function(d) {
+        return h+20 - yScale(d.value) + 14;
+      })
+      .attr("font-family", "sans-serif") 
+      .attr("font-size", "11px")
+      .attr("fill", "white")
+      .attr("transform", "translate(0,-15)");
 }
-
-function reset() {
-  svg.selectAll("rect")
-  .sort(function(a, b){
-    return a.key - b.key;
-  })
-  .transition()
-  .delay(function (d, i) {
-    return i * 50;
-  })
-  .duration(1000)
-  .attr("x", function (d, i) {
-    return xScale(i);
-  });
-
-  svg.selectAll('text')
-  .sort(function(a, b){
-    return a.key - b.key;
-  })
-  .transition()
-  .delay(function (d, i) {
-    return i * 50;
-  })
-  .duration(1000)
-  .text(function (d) {
-    return d.value;
-  })
-  .attr("text-anchor", "middle")
-  .attr("x", function (d, i) {
-    return xScale(i) + xScale.rangeBand() / 2;
-  })
-  .attr("y", function (d) {
-    return h - yScale(d.value) + 14;
-  });
-};
-
 
 
 
@@ -682,204 +625,128 @@ function reset() {
  <script type="text/javascript">
 
   var w = 120;
-  var h = 100;
+  var h = 80;
 
-  var dataset = [ 
-  { key: 0, value: 5 },
-  { key: 1, value: 10 },
-  { key: 2, value: 13 },
-  { key: 3, value: 19 },
-  { key: 4, value: 21 },
-  { key: 5, value: 25 },
-  { key: 6, value: 22 },
-  { key: 7, value: 18 },
-  { key: 8, value: 15 } ];
-  var xScale = d3.scale.ordinal()
-  .domain(d3.range(dataset.length))
-  .rangeRoundBands([0, w], 0.05); 
+  //Create SVG element
+    var svg2 = d3.select($("#waitTimeParcel")[0])
+    .append("svg")
+    .attr("width", w)
+    .attr("height", h+40);
 
-  var yScale = d3.scale.linear()
-  .domain([0, d3.max(dataset, function(d) {return d.value;})])
-  .range([0, h]);
+    var dataset = [ 
+    { key: 0, value: 0 },
+    { key: 5, value: 0 },
+    { key: 10, value: 0 },
+    { key: 15, value: 0 },
+    { key: 20,value: 0 },
+    { key: 25, value: 0 },
+    { key: 30, value: 0 },
+    { key: 35, value: 0 }];
 
   var key = function(d) {
     return d.key;
   };
 
+    var xScale2 = d3.scale.ordinal()
+    .domain(d3.range(0, 40, 5))
+    .rangeRoundBands([0, w], 0.05); 
 
-//Create SVG element
-var svg = d3.select($("#waitTimeParcel")[0])
-.append("svg")
-.attr("width", w)
-.attr("height", h);
+    // using same yScale as person chart
+    // TODO: remove assumption that person chart always has higher frequencies
 
-//Create bars
-svg.selectAll("rect")
-.data(dataset, key)
-.enter()
-.append("rect")
-.attr("x", function(d, i) {
-  return xScale(i);
-})
-.attr("y", function(d) {
-  return h - yScale(d.value);
-})
-.attr("width", xScale.rangeBand())
-.attr("height", function(d) {
-  return yScale(d.value);
-})
-.attr("fill", "#FFCC00")
+  svg2.selectAll("rect")
+    .data(dataset, key)
+    .enter()
+    .append("rect")
+    .attr("x", function(d, i) {
+      return xScale2(i);
+    })
+    .attr("y", function(d) {
+      return h - yScale(d.value);
+    })
+    .attr("width", xScale2.rangeBand())
+    .attr("height", function(d) {
+      return yScale(d.value);
+    })
+    .attr("fill", "#FFCC00")
 
-  //Tooltip
-  .on("mouseover", function(d) {
-    //Get this bar's x/y values, then augment for the tooltip
-    var xPosition = parseFloat(d3.select(this).attr("x")) + xScale.rangeBand() / 2;
-    var yPosition = parseFloat(d3.select(this).attr("y")) + 14;
-    
-    //Update Tooltip Position & value
-    d3.select("#tooltip")
-    .style("left", xPosition + "px")
-    .style("top", yPosition + "px")
-    .select("#value")
-    .text(d.value);
-    d3.select("#tooltip").classed("hidden", false)
-  })
-  .on("mouseout", function() {
-    //Remove the tooltip
-    d3.select("#tooltip").classed("hidden", true);
-  })  ;
+        //Create labels
+  svg2.selectAll("text")
+    .data(dataset, key)
+    .enter()
+    .append("text")
+    .text(function(d) {
+      if (d.value == 0) return "";
+      return d.value;
+    })
+    .attr("text-anchor", "middle")
+    .attr("x", function(d, i) {
+      return xScale2(5*i) + xScale2.rangeBand() / 2;
+    })
+    .attr("y", function(d) {
+      return h - yScale(d.value) + 14;
+    })
+    .attr("font-family", "sans-serif") 
+    .attr("font-size", "11px")
+    .attr("fill", "white")
+    .attr("transform", "translate(0,-15)");
 
-//Create labels
-svg.selectAll("text")
-.data(dataset, key)
-.enter()
-.append("text")
-.text(function(d) {
-  return d.value;
-})
-.attr("text-anchor", "middle")
-.attr("x", function(d, i) {
-  return xScale(i) + xScale.rangeBand() / 2;
-})
-.attr("y", function(d) {
-  return h - yScale(d.value) + 14;
-})
-.attr("font-family", "sans-serif") 
-.attr("font-size", "11px")
-.attr("fill", "white");
+  var xAxis2 = d3.svg.axis()
+    .scale(xScale2)
+    .tickSize(0)
+    .tickPadding(6)
+    .orient("bottom");
 
-var sortOrder = false;
-var sortBars = function () {
-  sortOrder = !sortOrder;
+  svg2.append("g")
+    .call(xAxis2)
+    .attr("transform", "translate(0, 100)")
+    .attr("class", "x axis")
+    .attr("fill", "white");
 
-  sortItems = function (a, b) {
-    if (sortOrder) {
-      return a.value - b.value;
-    }
-    return b.value - a.value;
-  };
+  function drawPackageWaitTime(dataset) {
 
-  svg.selectAll("rect")
-  .sort(sortItems)
-  .transition()
-  .delay(function (d, i) {
-    return i * 50;
-  })
-  .duration(1000)
-  .attr("x", function (d, i) {
-    return xScale(i);
-  });
+    xScale2 = d3.scale.ordinal()
+    .domain(d3.range(dataset.length))
+    .rangeRoundBands([0, w], 0.05); 
 
-  svg.selectAll('text')
-  .sort(sortItems)
-  .transition()
-  .delay(function (d, i) {
-    return i * 50;
-  })
-  .duration(1000)
-  .text(function (d) {
-    return d.value;
-  })
-  .attr("text-anchor", "middle")
-  .attr("x", function (d, i) {
-    return xScale(i) + xScale.rangeBand() / 2;
-  })
-  .attr("y", function (d) {
-    return h - yScale(d.value) + 14;
-  });
-};
-// Add the onclick callback to the button
-d3.select("#sort").on("click", sortBars);
-d3.select("#reset").on("click", reset);
-function randomSort() {
+    xAxis2 = d3.svg.axis()
+    .scale(xScale2)
 
+    //Create bars
+    svg2.selectAll("rect")
+    .data(dataset, key)
+    .attr("x", function(d, i) {
+      return xScale2(i);
+    })
+    .attr("y", function(d) {
+      return h + 20 - yScale(d.value);
+    })
+    .attr("width", xScale2.rangeBand())
+    .attr("height", function(d) {
+      return yScale(d.value);
+    })
+    .attr("fill", "#FFCC00")
 
-  svg.selectAll("rect")
-  .sort(sortItems)
-  .transition()
-  .delay(function (d, i) {
-    return i * 50;
-  })
-  .duration(1000)
-  .attr("x", function (d, i) {
-    return xScale(i);
-  });
+      //Create labels
+      svg2.selectAll("text")
+      .data(dataset, key)
+      .text(function(d) {
+        if (d.value == 0) return "";
+        return d.value;
+      })
+      .attr("text-anchor", "middle")
+      .attr("x", function(d, i) {
+        return xScale2(i) + xScale2.rangeBand() / 2;
+      })
+      .attr("y", function(d) {
+        return h + 20 - yScale(d.value) + 14;
+      })
+      .attr("font-family", "sans-serif") 
+      .attr("font-size", "11px")
+      .attr("fill", "white")
+      .attr("transform", "translate(0,-15)");
 
-  svg.selectAll('text')
-  .sort(sortItems)
-  .transition()
-  .delay(function (d, i) {
-    return i * 50;
-  })
-  .duration(1000)
-  .text(function (d) {
-    return d.value;
-  })
-  .attr("text-anchor", "middle")
-  .attr("x", function (d, i) {
-    return xScale(i) + xScale.rangeBand() / 2;
-  })
-  .attr("y", function (d) {
-    return h - yScale(d.value) + 14;
-  });
 }
-
-function reset() {
-  svg.selectAll("rect")
-  .sort(function(a, b){
-    return a.key - b.key;
-  })
-  .transition()
-  .delay(function (d, i) {
-    return i * 50;
-  })
-  .duration(1000)
-  .attr("x", function (d, i) {
-    return xScale(i);
-  });
-
-  svg.selectAll('text')
-  .sort(function(a, b){
-    return a.key - b.key;
-  })
-  .transition()
-  .delay(function (d, i) {
-    return i * 50;
-  })
-  .duration(1000)
-  .text(function (d) {
-    return d.value;
-  })
-  .attr("text-anchor", "middle")
-  .attr("x", function (d, i) {
-    return xScale(i) + xScale.rangeBand() / 2;
-  })
-  .attr("y", function (d) {
-    return h - yScale(d.value) + 14;
-  });
-};
-
-
 
 
 

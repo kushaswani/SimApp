@@ -16,12 +16,45 @@ var dTime = 0;
 var dDist = 0;
 var taxiTime = 0;
 
+var sim_data;
+var sim_tstep = 4;
+var sim_framestep = 25;
+
+var sim_hm_passStart;
+var sim_hm_passEnd;
+var sim_hm_parcStart;
+var sim_hm_parcEnd;
+var sim_passDropoffs = new Maps.MVCArray([]);
+var sim_passPickups = new Maps.MVCArray([]);
+var sim_parcDropoffs = new Maps.MVCArray([]);
+var sim_parcPickups = new Maps.MVCArray([]);
+
+//var sim_graphics = [];
+
 var allLines = {};
 var mode = {};
 
-var emissions = [2, 10, 5];
+var emissions = [0, 0, 0];
 var tot_distances = [0, 0, 0];
 var emissions_coeffs = [2, 10, 5];
+var person_wait_times = [ 
+    { key: 0, value: 0 },
+    { key: 5, value: 0 },
+    { key: 10, value: 0 },
+    { key: 15, value: 0 },
+    { key: 20, value: 0 },
+    { key: 25, value: 0 },
+    { key: 30, value: 0 },
+    { key: 35, value: 0 }];
+var package_wait_times = [ 
+    { key: 0, value: 0 },
+    { key: 5, value: 0 },
+    { key: 10, value: 0 },
+    { key: 15, value: 0 },
+    { key: 20, value: 0 },
+    { key: 25, value: 0 },
+    { key: 30, value: 0 },
+    { key: 35, value: 0 }];
 
 
 var c_taxi_time=0;
@@ -87,12 +120,12 @@ $(function() {
 
 function setMapNewbury() {
     map.center = new Maps.LatLng(42.3519319, -71.0827417);
-    map.setZoom(16);
+    map.setZoom(15);
 }
 
 function setMapBoston() {
-    map.center = new Maps.LatLng(42.367700, -71.089783);
-    map.setZoom(13)
+    map.center = new Maps.LatLng(42.359456, -71.076336);
+    map.setZoom(14)
 }
 
 function day() {
@@ -106,6 +139,7 @@ function day() {
         time++;
         
     }, 1000);
+    alert('b2');
 }
 
 function makeTimeLines() {
@@ -160,6 +194,40 @@ function both() {
     mode[Maps.TravelMode.BICYCLING] = true;
     mode[Maps.TravelMode.DRIVING] = true;
     start();
+}
+
+function fleet_sim() {
+    var fleet_size = $('#fleetSize').val();
+    var maxDist = $('#maxTripDist').val();
+    var parcelFreq = $('#parcelAmount').val();
+    var sim_params = {
+        size: fleet_size,
+        maxDist: maxDist,
+        parcels: parcelFreq,
+    };
+    console.log(sim_params);
+    $.post( '/fleetsim', JSON.stringify(sim_params), function( data ) {
+        console.log(data);
+        sim_data = data;
+        animateCars();
+    }, 'json');
+}
+
+function test_fleet_sim() {
+    var fleet_size = $('#fleetSize').val();
+    var maxDist = $('#maxTripDist').val();
+    var parcelFreq = $('#parcelAmount').val();
+    var sim_params = {
+        size: fleet_size,
+        maxDist: maxDist,
+        parcels: parcelFreq,
+    };
+    console.log(sim_params);
+    $.post( '/server/sim2.json', JSON.stringify(sim_params), function( data ) {
+        console.log(data);
+        sim_data = data;
+        animateCars();
+    }, 'json');
 }
 
 function taxi(trip) {
@@ -231,54 +299,491 @@ function accumulator(mark) {
     $("p#drive-dist").html(dDist + " meters");
 }
 
+function initHeatmaps() {
+    sim_hm_passEnd = new Maps.visualization.HeatmapLayer({
+        data: sim_passDropoffs,
+        map: map,
+        radius: 40,
+        opacity: .2,
+        gradient: [
+            'rgba(60, 170, 255, 0)',
+            'rgba(60, 170, 255, 1)',
+        ]
+    });
+   
+    
+    sim_hm_passStart = new Maps.visualization.HeatmapLayer({
+        data: sim_passPickups,
+        map: map,
+        radius: 40,
+        opacity: .2,
+        gradient: [
+            'rgba(255, 200, 0, 0)',
+            'rgba(255, 200, 64, 1)',
+        ]
+    });
+    
+    sim_hm_parcStart = new Maps.visualization.HeatmapLayer({
+        data: sim_parcPickups,
+        map: map,
+        radius: 40,
+        opacity: .2,
+        gradient: [
+            'rgba(255, 200, 0, 0)',
+            'rgba(255, 200, 64, 1)',
+        ]
+    });
+    
+    sim_hm_parcEnd = new Maps.visualization.HeatmapLayer({
+        data: sim_parcDropoffs,
+        map: map,
+        radius: 40,
+        opacity: .2,
+        gradient: [
+            'rgba(60, 170, 255, 0)',
+            'rgba(60, 170, 255, 1)',
+        ],
+    });
+}
+
+// ACTIVATION/DEACTIVATION OF HEATMAP TYPES
+function togglePassHeatmap() {
+    sim_hm_passStart.setMap(sim_hm_passStart.getMap() ? null : map);
+    sim_hm_passEnd.setMap(sim_hm_passEnd.getMap() ? null : map);    
+};
+
+function toggleParcHeatmap() {  
+    sim_hm_parcStart.setMap(sim_hm_parcStart.getMap() ? null : map);
+    sim_hm_parcEnd.setMap(sim_hm_parcEnd.getMap() ? null : map)
+};
+
+
+function drawUtilization() {
+    var layers = zipUtilization();
+    drawUtil(layers);
+}
+
+function zipUtilization() {
+    // zip layers into len-24 arrays of format
+    // [(index, y-value, y-min), ... ]
+    var util_human = [];
+    var util_parc = [];
+    for (var i = 0; i < 24; i++) {
+        if (i < sim_data.util.length) {
+            util_human.push({
+                x: i,
+                y: sim_data.util[i][0],
+                y0: 0,
+            });
+            util_parc.push({
+                x: i,
+                y: sim_data.util[i][0] + sim_data.util[i][1],
+                y0: sim_data.util[i][0],
+            });
+        } else {
+            util_human.push({
+                x: i,
+                y: 0,
+                y0: 0,
+            });
+            util_parc.push({
+                x: i,
+                y: 0,
+                y0: 0,
+            });
+        }
+    }
+    return [util_human, util_parc];
+}
+
+function calculateTripWaitTime(data) {
+    // TODO: don't count actual trips as wait time
+    // rounding to nearest multiple of 5
+    var wait_time = Math.round(data.route.duration/60/5); 
+    if (wait_time > 7) wait_time = 7;
+    if (data.is_human) {
+        person_wait_times[wait_time].value += 1;
+    } else {
+        package_wait_times[wait_time].value += 1;
+    }
+    drawPersonWaitTime(person_wait_times);
+    drawPackageWaitTime(package_wait_times);
+}
+
+
+function animateCars() {
+    // like animateLines but for cars with a schedule of many things to do    
+
+    // first clear the intervals
+    for (var i = 0; i < intervals.length; i++) {
+        window.clearInterval(intervals[n]);
+    }
+
+    drawUtilization();
+    
+    sim_data['tstep'] = 0;
+    
+    // Set up global time
+    interval = window.setInterval(function() {
+        if (!interval) {
+            return;
+        }
+        sim_data.tstep += sim_tstep;
+    }, sim_framestep);
+    intervals.push(interval);
+    
+    initHeatmaps();
+    
+    drawUtilization();
+    
+    var interval;
+    
+    var sim_factor = 10;
+    
+    sim_data['curTask'] = 0;
+    sim_data['shown'] = [];
+    sim_data['curHour'] = 0;
+    
+    interval = window.setInterval(function() {
+        if (!interval) {
+            return;
+        }
+                
+        // TODO fuck it we'll just redraw the whole thing for now
+        if (sim_data.curHour < sim_data.tstep / 3600) {
+            // New hour
+            sim_data.curHour++;
+            if (sim_data.curHour < sim_data.emissions.length) {
+            // emissions[0] = sim_data.emissions[sim_data.curHour];
+            // drawEmissionChart(emissions);
+            }
+        }
+        
+        if (sim_data.curTask < sim_data.trips.length) {        
+
+            while (sim_data.tstep >= sim_data.trips[sim_data.curTask].time_ordered) {
+                // draw the caller
+                // xxx
+                // console.log(sim_data.trips[sim_data.curTask])
+                // drawUtilization();
+                calculateTripEmission(sim_data.trips[sim_data.curTask], true);
+                drawEmissionChart(emissions);
+                calculateTripWaitTime(sim_data.trips[sim_data.curTask]);
+                var origin = {lat: sim_data.trips[sim_data.curTask].start_loc[0], lng: sim_data.trips[sim_data.curTask].start_loc[1]};
+                var marker;
+                if (sim_data.trips[sim_data.curTask].is_human) {
+                    marker = new Maps.Marker({
+                        position: origin,
+                        map: map,
+                        icon: {
+                            path: fontawesome.markers.CHILD,
+                            scale: 0.5,
+                            strokeWeight: 0.1,
+                            strokeColor: '#FFFF00',
+                            strokeOpacity: 1,
+                            fillColor: '#FFFF00',
+                            fillOpacity: 1
+                        },
+                        clickable: false,
+                    });
+                } else {
+                    marker = new Maps.Marker({
+                        position: origin,
+                        map: map,
+                        icon: {
+                            path: fontawesome.markers.CUBE,
+                            scale: 0.5,
+                            strokeWeight: 0.1,
+                            strokeColor: '#FF8000',
+                            strokeOpacity: 1,
+                            fillColor: '#FF8000',
+                            fillOpacity: 1
+                        },
+                        clickable: false,
+                    });
+                }
+                marker.info = {};
+                sim_data.trips[sim_data.curTask]['marker'] = marker;
+                
+                sim_data.shown.push(sim_data.curTask);
+                
+                sim_data.curTask++;
+                if (sim_data.curTask >= sim_data.trips.length) {
+                    break;
+                }
+            }
+        }
+        
+        if (sim_data.shown.length > 0) {
+            // disappear old tasks that have completed
+            // TODO use a heap implementation for speed ?
+            for (var i = 0; i < sim_data.shown.length; i++) {
+                var tripIdx = sim_data.shown[i];
+                if (sim_data.trips[tripIdx].pickup <= sim_data.tstep) {
+                    // remove element
+                    sim_data.trips[tripIdx].marker.setMap(null);
+                    if (sim_data.trips[tripIdx].is_human) {
+                        sim_passPickups.push(sim_data.trips[tripIdx].marker.position);
+                    } else {
+                        sim_parcPickups.push(sim_data.trips[tripIdx].marker.position);
+                    }
+                    sim_data.trips[tripIdx].marker = null;
+                    
+                    // remove element at [i]
+                    sim_data.shown.splice(i, 1);
+                    i--; // I hate doing this 
+                }
+                
+            }
+        }
+        
+    }, sim_framestep * sim_factor);
+    intervals.push(interval);
+    
+    // TODO how do I extract and render statistics at the frame level?
+    // Should I just check and update every time a car finishes a trip or
+    // something (and have a callback)
+    sim_data.fleet.vehicles.forEach(drawCarStuff);
+}
+
+function drawCarStuff(car) {
+    car.current = 0;
+    var latLngLoc = {lat: car.spawn[0], lng: car.spawn[1]};
+    var carMarker = new Maps.Marker({
+        position: latLngLoc,
+        icon: {
+            path: Maps.SymbolPath.CIRCLE,
+            scale: 8,
+            strokeColor: 'white', // TODO color
+        },
+        map: map,
+      });
+    car['curTaskRender'] = carMarker;
+    
+    var interval; // I guess I declare this to have a static reference?
+
+    interval = window.setInterval(function() {
+       if (!interval) {
+           return;
+       } 
+        
+        var newTask = false;
+        
+        if (car.current >= car.history.length) {
+            return;
+        }
+        
+        // update the car to the tstep
+        var ctask = car.history[car.current]
+        while (sim_data.tstep >= ctask.end) {
+            if (ctask.kind == "PASSENGER") {
+                // TODO Find good gaussian icon
+                var dest = new Maps.LatLng(ctask.dest[0], ctask.dest[1]);
+                sim_passDropoffs.push(dest);
+            }
+            else if (ctask.kind == "PARCEL") {
+                var dest = new Maps.LatLng(ctask.dest[0], ctask.dest[1]);
+                sim_parcDropoffs.push(dest);
+            }
+            car.current++;
+            newTask = true;
+            if (car.current >= car.history.length) {
+                // What do we do when we're at the end of the sim?
+                // TODO
+                var loc = {lat: ctask.dest[0], lng: ctask.dest[1]};
+                var carMarker = new Maps.Marker({
+                    position: loc,
+                    icon: {
+                        path: Maps.SymbolPath.CIRCLE,
+                        scale: 8,
+                        strokeColor: 'white', // TODO color
+                    },
+                  });
+                car.curTaskRender.setMap(null);
+                car.curTaskRender = carMarker;
+                car.curTaskRender.setMap(map);
+                return;
+            }
+            ctask = car.history[car.current];
+        }
+                
+        //  various tasks - based on car.history[car.current]
+        switch(car.history[car.current].kind) {
+            case 'IDLE':
+                if (newTask) {
+                    var loc = {lat: ctask.dest[0], lng: ctask.dest[1]};
+                    var carMarker = new Maps.Marker({
+                        position: loc,
+                        icon: {
+                            path: Maps.SymbolPath.CIRCLE,
+                            scale: 8,
+                            strokeColor: 'white', // TODO color
+                            strokeOpacity: 0.5,
+                        },
+                      });
+                    car.curTaskRender.setMap(null);
+                    car.curTaskRender = carMarker;
+                    car.curTaskRender.setMap(map);
+                }
+                break;
+            case 'NAV':
+                if (newTask) {
+                    ctask['color'] = 'white';
+                    // Draw a line from the car's polyline
+                    var polyline = polylineFromTask(ctask);
+                    
+                    car.curTaskRender.setMap(null);
+                    car.curTaskRender = polyline;
+                } else {
+                    var icons = car.curTaskRender.get('icons');
+                    icons[0].offset = ( ((sim_data.tstep - ctask.start) / (ctask.route.duration)) * 100 ) + '%'; // google maps api stuff here
+                    car.curTaskRender.set('icons', icons);
+                }
+                car.curTaskRender.setMap(map);
+                break;
+            case 'PASSENGER':
+                if (newTask) {
+                    ctask['color'] = '#F0F000';
+
+                    // Draw a line from the car's polyline
+                    var polyline = polylineFromTask(ctask);
+                    
+                    car.curTaskRender.setMap(null);
+                    car.curTaskRender = polyline;
+
+                } else {
+                    var icons = car.curTaskRender.get('icons');
+                    icons[0].offset = ( ((sim_data.tstep - ctask.start) / (ctask.route.duration)) * 100 ) + '%'; // google maps api stuff here
+                    car.curTaskRender.set('icons', icons);
+                }
+                car.curTaskRender.setMap(map);
+                break;
+            case 'PARCEL':
+                if (newTask) {
+                    ctask['color'] = '#FF8000'
+                    // Draw a line from the car's polyline
+                    var polyline = polylineFromTask(ctask);
+                    
+                    car.curTaskRender.setMap(null);
+                    car.curTaskRender = polyline;
+
+                } else {
+                    var icons = car.curTaskRender.get('icons');
+                    icons[0].offset = ( ((sim_data.tstep - ctask.start) / (ctask.route.duration)) * 100 ) + '%'; // google maps api stuff here
+                    car.curTaskRender.set('icons', icons);
+                }
+                car.curTaskRender.setMap(map);
+                break;
+            default:
+                alert('error');
+        }
+        //    Car is going somewhere
+        //      draw current line and car position on it
+        //      color := package (dark green)/ passenger (light green)/navigation (de-sat green)
+        //    Car is loitering
+        //      draw car at position
+        //      color := loiter color (de-sat green)?
+        
+        
+    }, sim_framestep * 2);
+    intervals.push(interval);
+}
+
+function polylineFromTask(ctask) {
+    var polyline = new Maps.Polyline({
+        path: [],
+        icons: [],
+        strokeColor: ctask.color,
+        strokeOpacity: 0.5,
+        strokeWeight: 7,
+    });
+
+    // Credits to http://www.geocodezip.com/V3_Polyline_from_directions.html
+    // var path = ctask.route.rte.overview_polyline.points;
+    var legs = ctask.route.rte.legs;
+    for (var i = 0; i < legs.length; i++) {
+        var steps = legs[i].steps;
+        for (var j = 0; j < steps.length; j++) {
+            var nextSegment = google.maps.geometry.encoding.decodePath(steps[j].polyline.points);
+            for (var k = 0; k < nextSegment.length; k++) {
+                polyline.getPath().push(nextSegment[k]);
+            }
+        }
+    }
+    
+    var lineSymbol = {
+        path: Maps.SymbolPath.CIRCLE,
+        scale: 8,
+        strokeColor: ctask.color,
+    };
+
+    // add the circular symbol to the line
+    polyline.icons.push({
+        icon: lineSymbol,
+        offset: "0%", // at the starting position
+    });
+    
+    return polyline;
+}
+
 function animateLines() {
     for (var n = 0; n < intervals.length; n++) {
         window.clearInterval(intervals[n]);
     }
-
     var finished = 0;
 
     lines.forEach(function(line) {
+        // Prepare the circular symbol for the bike or taxi
         var lineSymbol = {
             path: Maps.SymbolPath.CIRCLE,
             scale: 8,
             strokeColor: line.strokeColor,
         };
+        
+        // add the circular symbol to the line
         line.icons.push({
             icon: lineSymbol,
-            offset: "0%",
+            offset: "0%", // at the starting position
         });
-        var count = 0;
-        var interval;
+        
+
+        var count = 0; // Time step
+        var interval; // basically a frame of rendering
 
         interval = window.setInterval(function() {
         	if (!interval) {
         		return;
         	}
+            
+            // increment the time step (seconds of real time)
             count += 5;
-            if (count > line.travelTime.value) {
+            if (count > line.travelTime.value) { // check if the trip finished
+                // and clear the icon; the vehicle can disappear
                 window.clearInterval(interval);
                 finished += 1;
                 interval = undefined;
 
-                if (finished === lines.length) {
+                if (finished === lines.length) { // if all the lines at this step are done
+                    // proceed to rendering the next trip
                  tripChanged(trips[++t]);
-                 $("ol#trip-list li:nth-child(" + (t + 1) + ")").css("opacity", "1");
+                 $("ol#trip-list li:nth-child(" + (t + 1) + ")").css("opacity", "1"); // some jquery I don't understand
                  lines.forEach(function(polyline) {
-                  accumulator(polyline);
+                  accumulator(polyline); // I think this is just unused statistics stuff
               });
                  lines.forEach(function(polyline) {
-                    polyline.setMap(null);
+                    polyline.setMap(null); // stop drawing it I think?
                 });
-                 lines = [];
+                 lines = []; // and... ? probably clear it since it's a global variable (yay?)
                  return;
              }
          }
+         // whether the trip is finished or not...
+            // update lines.icons[0] (which I think is the only icon [?]) to have advanced a percentage of the trip
          var icons = line.get('icons');
-         icons[0].offset = ( (count / line.travelTime.value) * 100 ) + '%';
+         icons[0].offset = ( (count / line.travelTime.value) * 100 ) + '%'; // google maps api stuff here
          line.set('icons', icons);
-     }, 20);
-        intervals.push(interval);
+     }, 20); // ms per interval
+        intervals.push(interval); // ...and push intervals? maybe this is necessary to render?
     });
 }
 
@@ -321,6 +826,7 @@ function drawPaths(paths, origin, id) {
         // Credits to http://www.geocodezip.com/V3_Polyline_from_directions.html
         var path = paths[p].routes[0].overview_path;
         var legs = paths[p].routes[0].legs;
+        console.log(paths[p].routes[0]);
         for (var i = 0; i < legs.length; i++) {
             var steps = legs[i].steps;
             for (var j = 0; j < steps.length; j++) {
@@ -415,7 +921,7 @@ function getRouteDistance(route) {
 }
 
 function calculateEmissions(paths) {
-    console.log(paths)
+    console.log(paths);
     for (var i = 0; i < paths.length; i++) {
     if (paths[i].request.travelMode === Maps.TravelMode.BICYCLING) {
         tot_distances[0] = getRouteDistance(paths[i].routes[0]);
@@ -428,7 +934,7 @@ function calculateEmissions(paths) {
     for (var i = 0; i < emissions.length; i++) {
         emissions[i] = tot_distances[i] * emissions_coeffs[i] / 10000
     }
-  //  normalize_emissions()
+  //normalize_emissions()
 }
 
 function normalize_emissions() {
@@ -440,11 +946,24 @@ function normalize_emissions() {
     }
 }
 
+function calculateTripEmission(trip, isCar) {
+    if (isCar) {
+        tot_distances[1] = trip.route.distance;
+        tot_distances[2] = trip.route.distance;
+    // } else {
+        tot_distances[0] = trip.route.distance;
+    }  
+    
+    for (var i = 0; i < emissions.length; i++) {
+        emissions[i] += tot_distances[i] * emissions_coeffs[i] / 10000;
+    }
+  //normalize_emissions()
+}
+
 function tripChanged(trip) {
     if (!trip) {
         return
     }
-    
     taxi(trip);
 
     var res = [];
@@ -458,7 +977,10 @@ function tripChanged(trip) {
                 // TODO total trip distances and calculate emissions
                 calculateEmissions(res)
                 drawPaths(res, origin, trip.id);
+                alert('breakpt');
                 animateLines();
+                drawEmissionChart(emissions);
+                drawUtilization();
             }
         }
     };
@@ -476,7 +998,7 @@ function tripChanged(trip) {
             travelMode:  Maps.TravelMode.BICYCLING,
         }, dirfunc);
     }
-    drawEmissionChart(emissions)
+    
 }
 
 
@@ -533,8 +1055,8 @@ document.getElementById("driveBtn").disabled = false;
 window.onload = function() {
     document.getElementById("trip-file").addEventListener("change", fileChanged, false);
     map = new Maps.Map(document.getElementById('map-canvas'), {
-      zoom: 13,
-      center: new Maps.LatLng(42.367700, -71.089783),
+      zoom: 14,
+      center: new Maps.LatLng(42.359456, -71.076336),
       mapTypeId: Maps.MapTypeId.ROADMAP,
       mapTypeControl: false,
       streetViewControl: false,
