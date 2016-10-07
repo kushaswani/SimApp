@@ -2,7 +2,8 @@ from server import *
 
 dynamic_trips.TripRandomizer()
 dynamic_trips.TripRandomizer().loadLocsFile(".loc_file")
-dynamic_trips.TripRandomizer().loadRidesFile(".rides_def")
+
+# TODO where's this? dynamic_trips.TripRandomizer().loadRidesFile(".rides_def")
 
 routes.RouteFinder("server/google_api_key", ".routes_cache")
 

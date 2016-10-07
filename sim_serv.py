@@ -21,34 +21,44 @@ PORT = 8233
 class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     def do_GET(self):
+        print 'getting here?'
         logging.warning("======= GET STARTED =======")
         logging.warning(self.headers)
         SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
 
+    def do_OPTIONS(self):
+        self.send_response(200, "ok")
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+        self.send_header("Access-Control-Allow-Headers", "X-Requested-With")
+
     def do_POST(self):
+        print 'posting up here m8'
         logging.warning("======= POST STARTED =======")
-	logging.warning(" PATH: " + self.path)
+        logging.warning(" PATH: " + self.path)
         logging.warning(self.headers)
         logging.warning("======= POST VALUES =======")
 
-	length = int(self.headers['Content-Length'])
-	data = self.rfile.read(length)
-	logging.warning("Received: " + data)
+        length = int(self.headers['Content-Length'])
+        data = self.rfile.read(length)
+        logging.warning("Received: " + data)
         logging.warning("\n")
-	if self.path == "/fleetsim":
-		## do fleet sim stuff
-		args = json.loads(data)
-		fleet_size = int(args["size"])
-		(dist, units) = args["maxDist"].split()
-		maxDist = int(dist) * 1600
-		parcFreq = int(args["parcels"].split()[0])
-		print fleet_size
-		print maxDist
-		print parcFreq
-		response = server.run_sim.Run(fleet_size, maxDist, parcFreq, 0, 28800)
-		self.wfile.write(response)
-	else:
-        	SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
+        if self.path == "/fleetsim":
+            ## do fleet sim stuff
+            print 'post received'
+            args = json.loads(data)
+            fleet_size = int(args["size"])
+            (dist, units) = args["maxDist"].split()
+            maxDist = int(dist) * 1600
+            parcFreq = int(args["parcels"].split()[0])
+            print fleet_size
+            print maxDist
+            print parcFreq
+            response = server.run_sim.Run(
+                fleet_size, maxDist, parcFreq, 0, 28800)
+            self.wfile.write(response)
+        else:
+            SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
 
 # initialize simulation stuff
 server.routes.RouteFinder("google_api_key", ".routes_cache")

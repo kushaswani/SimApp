@@ -41,7 +41,7 @@ class RouteFinder:
                 if route:
                     self.cache[(origin, dest)] = Route(route)
                 else:
-                    print "Couldn't find route from " + str(origin) + " to " + str(dest)
+                    print "Couldn't find route from " + str(origin) + " to " + str(dest) + " (not cached)"
                     return None
             return self.cache[(origin,dest)]
 
@@ -99,7 +99,7 @@ class Route:
     def getDuration(self):
         return self.duration
 
-@atexit.register
-def goodbye():
-    print "exiting..."
-    RouteFinder.instance.save_cache()
+# @atexit.register
+# def goodbye():
+#     print "exiting..."
+#     RouteFinder.instance.save_cache()
