@@ -7,4 +7,5 @@ dynamic_trips.TripRandomizer().loadLocsFile(".loc_file")
 
 routes.RouteFinder("server/google_api_key", ".routes_cache")
 
-print run_sim.Run(15, 4800, 3, 0, 28800)
+run_sim.Run(15, 4800, 3, 0, 28800)
+print 'running sim'

@@ -21,7 +21,6 @@ PORT = 8233
 class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     def do_GET(self):
-        print 'getting here?'
         logging.warning("======= GET STARTED =======")
         logging.warning(self.headers)
         SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
@@ -33,7 +32,7 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Headers", "X-Requested-With")
 
     def do_POST(self):
-        print 'posting up here m8'
+        print 'posting up here'
         logging.warning("======= POST STARTED =======")
         logging.warning(" PATH: " + self.path)
         logging.warning(self.headers)
