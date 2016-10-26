@@ -7,7 +7,7 @@ var lines = [];
 var intervals = [];
 var tripID;
 var map;
-var mapOptions;
+var mapOptions; 
 var t;
 var markers = [];
 var bTime = 0;
@@ -17,8 +17,11 @@ var dDist = 0;
 var taxiTime = 0;
 
 var sim_data;
+var sim_uid = "";
 var sim_tstep = 4;
 var sim_framestep = 25;
+var sim_queryonce = true;
+var sim_ongoing = false;
 
 var sim_hm_passStart;
 var sim_hm_passEnd;
@@ -37,7 +40,7 @@ var mode = {};
 var emissions = [0, 0, 0];
 var tot_distances = [0, 0, 0];
 var emissions_coeffs = [2, 10, 5];
-var person_wait_times = [
+var person_wait_times = [ 
     { key: 0, value: 0 },
     { key: 5, value: 0 },
     { key: 10, value: 0 },
@@ -46,7 +49,7 @@ var person_wait_times = [
     { key: 25, value: 0 },
     { key: 30, value: 0 },
     { key: 35, value: 0 }];
-var package_wait_times = [
+var package_wait_times = [ 
     { key: 0, value: 0 },
     { key: 5, value: 0 },
     { key: 10, value: 0 },
@@ -120,12 +123,12 @@ $(function() {
 
 function setMapNewbury() {
     map.center = new Maps.LatLng(42.3519319, -71.0827417);
-    map.setZoom(15);
+    map.setZoom(16);
 }
 
 function setMapBoston() {
-    map.center = new Maps.LatLng(42.359456, -71.076336);
-    map.setZoom(14)
+    map.center = new Maps.LatLng(42.367700, -71.089783);
+    map.setZoom(13)
 }
 
 function day() {
@@ -137,7 +140,7 @@ function day() {
 
         }
         time++;
-
+        
     }, 1000);
     alert('b2');
 }
@@ -203,12 +206,18 @@ function fleet_sim() {
     var sim_params = {
         size: fleet_size,
         maxDist: maxDist,
-        parcels: parcelFreq,
+        parcels: parcelFreq,   
+        sim_uid: sim_uid,
+        sim_start: 0,
+        sim_dur: 1800,
     };
     console.log(sim_params);
     $.post( '/fleetsim', JSON.stringify(sim_params), function( data ) {
         console.log(data);
         sim_data = data;
+        sim_queryonce = true;
+        sim_uid = sim_data['sim_uid'];
+        sim_ongoing = true;
         animateCars();
     }, 'json');
 }
@@ -247,9 +256,9 @@ function taxi(trip) {
     // document.getElementById("result").innerHTML = localStorage.getItem("lastname");
     // console.log(localStorage.getItem("c_taxi_time"));
 } else {
-    console.log("Sorry, your browser does not support Web Storage...");
+    console.log("Sorry, your browser does not support Web Storage..."); 
 }
-
+    
 
 }
 
@@ -259,9 +268,9 @@ function expandTime(time) {
     var minutes = Math.floor(time/60);
     var seconds = time%60;
     return hours + "hrs " + minutes + "min ";
-
+    
     // + seconds + "sec"
-
+    
 }
 
 function clear() {
@@ -303,60 +312,49 @@ function initHeatmaps() {
     sim_hm_passEnd = new Maps.visualization.HeatmapLayer({
         data: sim_passDropoffs,
         map: map,
-        radius: 40,
+        radius: 30,
         opacity: .2,
         gradient: [
-            'rgba(60, 170, 255, 0)',
-            'rgba(60, 170, 255, 1)',
+            'rgba(255, 0, 0, 0)',
+            'rgba(255, 255, 0, 1)',
         ]
     });
-
-
+    
+    // TODO adjust radius and zoom
+    
     sim_hm_passStart = new Maps.visualization.HeatmapLayer({
         data: sim_passPickups,
         map: map,
-        radius: 40,
+        radius: 30,
         opacity: .2,
         gradient: [
-            'rgba(255, 200, 0, 0)',
-            'rgba(255, 200, 64, 1)',
+            'rgba(255, 0, 0, 0)',
+            'rgba(255, 200, 0, 1)',
         ]
     });
-
+    
     sim_hm_parcStart = new Maps.visualization.HeatmapLayer({
         data: sim_parcPickups,
         map: map,
-        radius: 40,
+        radius: 30,
         opacity: .2,
         gradient: [
-            'rgba(255, 200, 0, 0)',
-            'rgba(255, 200, 64, 1)',
+            'rgba(255, 0, 0, 0)',
+            'rgba(255, 150, 64, 1)',
         ]
     });
-
+    
     sim_hm_parcEnd = new Maps.visualization.HeatmapLayer({
         data: sim_parcDropoffs,
         map: map,
-        radius: 40,
+        radius: 30,
         opacity: .2,
         gradient: [
-            'rgba(60, 170, 255, 0)',
-            'rgba(60, 170, 255, 1)',
+            'rgba(255, 0, 0, 0)',
+            'rgba(200, 128, 64, 1)',
         ],
     });
 }
-
-// ACTIVATION/DEACTIVATION OF HEATMAP TYPES
-function togglePassHeatmap() {
-    sim_hm_passStart.setMap(sim_hm_passStart.getMap() ? null : map);
-    sim_hm_passEnd.setMap(sim_hm_passEnd.getMap() ? null : map);
-};
-
-function toggleParcHeatmap() {
-    sim_hm_parcStart.setMap(sim_hm_parcStart.getMap() ? null : map);
-    sim_hm_parcEnd.setMap(sim_hm_parcEnd.getMap() ? null : map)
-};
-
 
 function drawUtilization() {
     var layers = zipUtilization();
@@ -399,7 +397,7 @@ function zipUtilization() {
 function calculateTripWaitTime(data) {
     // TODO: don't count actual trips as wait time
     // rounding to nearest multiple of 5
-    var wait_time = Math.round(data.route.duration/60/5);
+    var wait_time = Math.round(data.route.duration/60/5); 
     if (wait_time > 7) wait_time = 7;
     if (data.is_human) {
         person_wait_times[wait_time].value += 1;
@@ -412,7 +410,7 @@ function calculateTripWaitTime(data) {
 
 
 function animateCars() {
-    // like animateLines but for cars with a schedule of many things to do
+    // like animateLines but for cars with a schedule of many things to do    
 
     // first clear the intervals
     for (var i = 0; i < intervals.length; i++) {
@@ -420,35 +418,65 @@ function animateCars() {
     }
 
     drawUtilization();
-
+    
     sim_data['tstep'] = 0;
-
+    
     // Set up global time
     interval = window.setInterval(function() {
         if (!interval) {
             return;
         }
+        if (sim_data.tstep > sim_data.sim_end) {
+            // TODO garbage collect, finish simulation
+            return;
+        }
         sim_data.tstep += sim_tstep;
+        if ((sim_data.tstep / sim_tstep) % 50 == 0) {
+            console.log(sim_data.tstep);
+            console.log(sim_data.sim_end);
+        }
+        if (sim_ongoing && sim_queryonce &&
+           secondsFromSimEnd() < 5) {
+            sim_queryonce = false;
+            var fleet_size = $('#fleetSize').val();
+            var maxDist = $('#maxTripDist').val();
+            var parcelFreq = $('#parcelAmount').val();
+            var sim_params = {
+                size: fleet_size,
+                maxDist: maxDist,
+                parcels: parcelFreq,   
+                sim_uid: sim_uid,
+                sim_start: sim_data.sim_end,
+                sim_dur: 1800,
+            };
+            console.log(sim_params);
+            $.post( '/fleetsim', JSON.stringify(sim_params), function( data ) {
+                console.log(data);
+                installSimData(data);
+                sim_queryonce = true;
+                // animateCars();
+            }, 'json');
+        }
     }, sim_framestep);
     intervals.push(interval);
-
+    
     initHeatmaps();
-
+    
     drawUtilization();
-
+    
     var interval;
-
+    
     var sim_factor = 10;
-
+    
     sim_data['curTask'] = 0;
     sim_data['shown'] = [];
     sim_data['curHour'] = 0;
-
+    
     interval = window.setInterval(function() {
         if (!interval) {
             return;
         }
-
+        
         // TODO fuck it we'll just redraw the whole thing for now
         if (sim_data.curHour < sim_data.tstep / 3600) {
             // New hour
@@ -458,8 +486,10 @@ function animateCars() {
             // drawEmissionChart(emissions);
             }
         }
-
-        if (sim_data.curTask < sim_data.trips.length) {
+        
+        
+        
+        if (sim_data.curTask < sim_data.trips.length) {        
 
             while (sim_data.tstep >= sim_data.trips[sim_data.curTask].time_ordered) {
                 // draw the caller
@@ -504,16 +534,16 @@ function animateCars() {
                 }
                 marker.info = {};
                 sim_data.trips[sim_data.curTask]['marker'] = marker;
-
+                
                 sim_data.shown.push(sim_data.curTask);
-
+                
                 sim_data.curTask++;
                 if (sim_data.curTask >= sim_data.trips.length) {
                     break;
                 }
             }
         }
-
+        
         if (sim_data.shown.length > 0) {
             // disappear old tasks that have completed
             // TODO use a heap implementation for speed ?
@@ -528,18 +558,18 @@ function animateCars() {
                         sim_parcPickups.push(sim_data.trips[tripIdx].marker.position);
                     }
                     sim_data.trips[tripIdx].marker = null;
-
+                    
                     // remove element at [i]
                     sim_data.shown.splice(i, 1);
-                    i--; // I hate doing this
+                    i--; // I hate doing this 
                 }
-
+                
             }
         }
-
+        
     }, sim_framestep * sim_factor);
     intervals.push(interval);
-
+    
     // TODO how do I extract and render statistics at the frame level?
     // Should I just check and update every time a car finishes a trip or
     // something (and have a callback)
@@ -554,27 +584,27 @@ function drawCarStuff(car) {
         icon: {
             path: Maps.SymbolPath.CIRCLE,
             scale: 8,
-            strokeColor: 'white', // TODO color
+            strokeColor: '#008080', // TODO color
         },
         map: map,
       });
     car['curTaskRender'] = carMarker;
-
+    
     var interval; // I guess I declare this to have a static reference?
 
     interval = window.setInterval(function() {
        if (!interval) {
            return;
-       }
-
+       } 
+        
         var newTask = false;
-
+        
         if (car.current >= car.history.length) {
             return;
         }
-
+        
         // update the car to the tstep
-        var ctask = car.history[car.current]
+        var ctask = car.history[car.current];
         while (sim_data.tstep >= ctask.end) {
             if (ctask.kind == "PASSENGER") {
                 // TODO Find good gaussian icon
@@ -596,7 +626,7 @@ function drawCarStuff(car) {
                     icon: {
                         path: Maps.SymbolPath.CIRCLE,
                         scale: 8,
-                        strokeColor: 'white', // TODO color
+                        strokeColor: '#008080', // TODO color
                     },
                   });
                 car.curTaskRender.setMap(null);
@@ -606,7 +636,7 @@ function drawCarStuff(car) {
             }
             ctask = car.history[car.current];
         }
-
+                
         //  various tasks - based on car.history[car.current]
         switch(car.history[car.current].kind) {
             case 'IDLE':
@@ -617,7 +647,7 @@ function drawCarStuff(car) {
                         icon: {
                             path: Maps.SymbolPath.CIRCLE,
                             scale: 8,
-                            strokeColor: 'white', // TODO color
+                            strokeColor: '#008080', // TODO color
                             strokeOpacity: 0.5,
                         },
                       });
@@ -628,10 +658,10 @@ function drawCarStuff(car) {
                 break;
             case 'NAV':
                 if (newTask) {
-                    ctask['color'] = 'white';
+                    ctask['color'] = '#008080';
                     // Draw a line from the car's polyline
                     var polyline = polylineFromTask(ctask);
-
+                    
                     car.curTaskRender.setMap(null);
                     car.curTaskRender = polyline;
                 } else {
@@ -647,7 +677,7 @@ function drawCarStuff(car) {
 
                     // Draw a line from the car's polyline
                     var polyline = polylineFromTask(ctask);
-
+                    
                     car.curTaskRender.setMap(null);
                     car.curTaskRender = polyline;
 
@@ -663,7 +693,7 @@ function drawCarStuff(car) {
                     ctask['color'] = '#FF8000'
                     // Draw a line from the car's polyline
                     var polyline = polylineFromTask(ctask);
-
+                    
                     car.curTaskRender.setMap(null);
                     car.curTaskRender = polyline;
 
@@ -683,8 +713,8 @@ function drawCarStuff(car) {
         //    Car is loitering
         //      draw car at position
         //      color := loiter color (de-sat green)?
-
-
+        
+        
     }, sim_framestep * 2);
     intervals.push(interval);
 }
@@ -710,7 +740,7 @@ function polylineFromTask(ctask) {
             }
         }
     }
-
+    
     var lineSymbol = {
         path: Maps.SymbolPath.CIRCLE,
         scale: 8,
@@ -722,7 +752,7 @@ function polylineFromTask(ctask) {
         icon: lineSymbol,
         offset: "0%", // at the starting position
     });
-
+    
     return polyline;
 }
 
@@ -739,13 +769,13 @@ function animateLines() {
             scale: 8,
             strokeColor: line.strokeColor,
         };
-
+        
         // add the circular symbol to the line
         line.icons.push({
             icon: lineSymbol,
             offset: "0%", // at the starting position
         });
-
+        
 
         var count = 0; // Time step
         var interval; // basically a frame of rendering
@@ -754,7 +784,7 @@ function animateLines() {
         	if (!interval) {
         		return;
         	}
-
+            
             // increment the time step (seconds of real time)
             count += 5;
             if (count > line.travelTime.value) { // check if the trip finished
@@ -844,7 +874,7 @@ function drawPaths(paths, origin, id) {
         polyline.setMap(map);
         lines.push(polyline);
         allLines[id].push(polyline);
-
+        
         var popup = new Maps.InfoWindow({
             content: "Distance: " + polyline.travelDistance.value+ "\n"
             + "Duration: "+ polyline.travelTime.value
@@ -930,7 +960,7 @@ function calculateEmissions(paths) {
         tot_distances[2] = getRouteDistance(paths[i].routes[0]);
     }
     }
-
+    
     for (var i = 0; i < emissions.length; i++) {
         emissions[i] = tot_distances[i] * emissions_coeffs[i] / 10000
     }
@@ -947,15 +977,8 @@ function normalize_emissions() {
 }
 
 function calculateTripEmission(trip, isCar) {
-    if (isCar) {
-        tot_distances[1] = trip.route.distance;
-        tot_distances[2] = trip.route.distance;
-    // } else {
-        tot_distances[0] = trip.route.distance;
-    }
-
     for (var i = 0; i < emissions.length; i++) {
-        emissions[i] += tot_distances[i] * emissions_coeffs[i] / 10000;
+        emissions[i] += trip.route.distance * emissions_coeffs[i] / 10000;
     }
   //normalize_emissions()
 }
@@ -998,7 +1021,7 @@ function tripChanged(trip) {
             travelMode:  Maps.TravelMode.BICYCLING,
         }, dirfunc);
     }
-
+    
 }
 
 
@@ -1055,8 +1078,8 @@ document.getElementById("driveBtn").disabled = false;
 window.onload = function() {
     document.getElementById("trip-file").addEventListener("change", fileChanged, false);
     map = new Maps.Map(document.getElementById('map-canvas'), {
-      zoom: 14,
-      center: new Maps.LatLng(42.359456, -71.076336),
+      zoom: 13,
+      center: new Maps.LatLng(42.367700, -71.089783),
       mapTypeId: Maps.MapTypeId.ROADMAP,
       mapTypeControl: false,
       streetViewControl: false,
@@ -1388,3 +1411,36 @@ var darkMap = [
         ]
     }
     ]
+
+function push_all(arr1, arr2) {
+    arr1.push.apply(arr1, arr2);
+}
+
+function installSimData(data) {
+    if (data.sim_uid == sim_uid) {
+        // TODO merge util/wait/emissions
+        // merge vehicle histories and enabled/disabled
+        for (var i = 0; i < data.fleet.vehicles.length; i++) {
+            if (i < sim_data.fleet.vehicles.length) {
+                // TODO allow resizing fleet (handle enabled/disabled)
+                push_all(sim_data.fleet.vehicles[i].history, data.fleet.vehicles[i].history);
+            } else {
+                // TODO append and start drawing 
+            }
+        }
+        // merge trips
+        push_all(sim_data.trips, data.trips);
+        
+        // update timing details
+        sim_data.sim_end = data.sim_end;
+        
+        sim_ongoing = sim_data.ongoing;
+    }
+}
+
+function secondsFromSimEnd() {
+    var tsteps_left = sim_data.sim_end - sim_data.tstep;
+    var frames_left = tsteps_left / sim_tstep;
+    var ms_left = frames_left * sim_framestep;
+    return ms_left / 1000;
+}
