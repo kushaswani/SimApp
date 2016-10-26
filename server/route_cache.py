@@ -21,3 +21,4 @@ class RouteCache:
 		pass
 
 	def close(self):
+		pass
