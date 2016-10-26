@@ -1,0 +1,8 @@
+google_api_key
+*.out
+*.pkl
+*.pyc
+*.db
+*.pid
+db/
+*.bak
