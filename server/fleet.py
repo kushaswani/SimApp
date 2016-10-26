@@ -30,6 +30,9 @@ class Dispatch:
 	def getDistance(self):
 		return self.route_distance
 
+	def getEndLoc(self):
+		return self.dest
+
 def create_dispatch(time, start, dest):
 	rte = routes.RouteFinder().get_dirs(start, dest)
 	if rte is None:
@@ -53,8 +56,14 @@ class Vehicle:
 
 		self.history = [idle_dispatch(0, loc)]
 		self.current = 0
+		self.enabled = True
 
 		## TODO representation here
+	def enable(self):
+		self.enabled = True
+
+	def disable(self):
+		self.enabled = False
 
 	def update(self, time):
 		## The purpose of this method is to set the current loc (in case we use it in the future)
@@ -102,6 +111,22 @@ class Vehicle:
 			return t
 		else:
 			return self.history[-1].end
+
+	def locationAfter(self, t):
+		if self.history[-1].end <= t:
+			return self.history[-1].getEndLoc()
+		else:
+			## It's only called in one situation in which
+			## the passed in value is received from soonestFreeAfter
+			## It's possible that this may be used if in the future,
+			## PEVs can be redirected after being assigned or if PEVs
+			## carrying a package can pick up a passenger or additional
+			## package
+			raise(NotImplementedError)
+
+	def soonestArrivalAfter(self, t, dst, heuristic=lambda x, y: 0):
+		time_free_at = self.soonestFreeAfter(t)
+		return time_free_at + heuristic(self.locationAfter(time_free_at), dst)
 
 	def getUID(self):
 		return self.uid
@@ -175,39 +200,46 @@ class Vehicle:
 		return out
 
 class Fleet:
-	def __init__(self, fleet_size, bounds, start_loc):
+	def __init__(self, fleet_size, bounds, starting_locs):
 		self.vehicles = []
-		start_loc = start_loc
-		for i in xrange(fleet_size):
+		self.starting_locs = starting_locs
+		self.fleet_size = fleet_size
+		for i in xrange(self.fleet_size):
 			self.vehicles.append(
-				Vehicle(i, True, start_loc))		
+				Vehicle(i, True, starting_locs[i % len(starting_locs)]))		
 
 		
 	def assign_task(self, trip):
 		## TODO args, return?
 		t = trip.getTimeOrdered()
-		for v in self.vehicles:
-			v.update(t)
+		for i in xrange(self.fleet_size):
+			self.vehicles[i].update(t)
 		try:
 			(vid, wait) = fsched.assign(t, trip, self)
 			print "task " + str(trip.getID()) + " assigned to vehicle " + str(vid) + " with wait of " + str(wait)
 		except:
 			print "Unable to assign task " + str(trip.getID()) + " to any vehicle"
 
+
+	## TODO deprecate
 	def finishUp(self):
 		end = 0
-		for v in self.vehicles:
-			end = max(end, v.lastScheduledTime())
-		for v in self.vehicles:
-			v.finish(end)
+		for i in xrange(self.fleet_size):
+			end = max(end, self.vehicles[i].lastScheduledTime())
+		for i in xrange(self.fleet_size):
+			self.vehicles[i].finish(end)
+
+	def getSegment(self, start, end):
+		## TODO implement
+		return self
 
 	## returns the utilization (Passengers/packages) at time t
 	def getUtilization(self):
 		denom = float(len(self.vehicles))
 		utils = []
 		lenLongest = 0
-		for v in self.vehicles:
-			u = v.getUtilization(3600)
+		for i in xrange(self.fleet_size):
+			u = self.vehicles[i].getUtilization(3600)
 			lenLongest = max(len(u), lenLongest)
 			utils.append(u)
 		## flatten
@@ -228,8 +260,8 @@ class Fleet:
 	def getEmissions(self):
 		emissionsByVehicle = []
 		lenLongest = 0
-		for v in self.vehicles:
-			ebv = v.getEmissions(3600)
+		for i in xrange(self.fleet_size):
+			ebv = self.vehicles[i].getEmissions(3600)
 			lenLongest = max(len(ebv), lenLongest)
 			emissionsByVehicle.append(ebv)
 		out = []
@@ -245,8 +277,21 @@ class Fleet:
 			emissions = emissions * coeff
 			out.append(emissions)
 		return out
-		
-		
+			
+	def setFleetSize(self, size):
+		if size > self.fleet_size:
+			## add vehicles
+			for i in xrange(self.fleet_size, size):
+				## enable any disabled vehicles or add new ones
+				if i >= len(self.vehicles):
+					self.vehicles.append(Vehicle(i, True, self.starting_locs[i % len(starting_locs)]))
+				else:
+					self.vehicles[i].enable()
+		elif size < self.fleet_size:
+			## disable vehicles
+			for i in xrange(size, self.fleet_size):
+				self.vehicles[i].disable()
+		self.fleet_size = size
 
 	def __getitem__(self, key):
 		return self.vehicles[key]
