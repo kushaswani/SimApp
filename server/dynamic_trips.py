@@ -135,6 +135,25 @@ class TripRandomizer:
         pickups.sort(key=lambda x: x.getTimeOrdered())
         return pickups
 
+    
+# 	def assembleTripSim(self, hMaxDist, hFreq, pMaxDist, pFreq, start, end):
+# 		humanRiders = self.randomizedPreprocessedRides(hFreq, hMaxDist, start, end)
+# 		parcels = self.randomizedPreprocessedRides(pFreq, pMaxDist, start, end)
+# 		pickups = []
+# 		ids = 0
+# 		for h in humanRiders:
+# 			try:
+# 				pickups.append(trip.Pickup(ids, h[0], h[1].start, h[1].dest, True, route=h[1].route))
+# 			except:
+# 				print h
+# 				exit(1)
+# 			ids += 1
+# 		for p in parcels:
+# 			pickups.append(trip.Pickup(ids, p[0], p[1].start, p[1].dest, False, route=p[1].route))
+# 			ids += 1
+# 		pickups.sort(key=lambda x: x.getTimeOrdered())
+# 		return pickups
+
     def genRides(self, maxDist, total):
         f = routes.RouteFinder()
         tn = total / (maxDist / 800)
