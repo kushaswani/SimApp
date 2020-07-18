@@ -24,9 +24,12 @@ class Pickup:
 
 	def approx_dur(self):
 		## based on 10 mph, gives as-bird-flies in seconds
-		return sim_util.ll_dist_m(self.start_loc, self.dest_loc) / 4.47 
-		
+		return sim_util.ll_dist_m(self.start_loc, self.dest_loc) / 4.47
+
 	def routefind(self):
+		print(self.start_loc)
+		print(self.dest_loc)
+		# print(routes.RouteFinder().client)
 		self.route = routes.RouteFinder().get_dirs(self.start_loc, self.dest_loc)
 		if self.route is None:
 			raise Exception("could not find route")

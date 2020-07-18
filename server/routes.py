@@ -23,14 +23,18 @@ class RouteFinder:
 			except IOError:
 				self.cache = {}
 			self.cache_file = cache_file
-	
+
 		def get_dirs(self, origin, dest):
 			## TODO dynamic programming + graph algos for more cache hits?
 			## TODO do we need to do multiple modes? (bicycling vs driving)?
 			if (origin, dest) not in self.cache:
 				route = None
+
 				try:
-					route = self.client.directions(origin, dest, mode="bicycling")
+					print(self.client)
+					# route = self.client.directions(origin, dest, mode="bicycling")
+					route = self.client.directions(origin, dest, mode="driving")
+
 				except googlemaps.exceptions.Timeout:
 					print "Request timed out for " + str(origin) + " to " + str(dest)
 					return None
@@ -44,9 +48,12 @@ class RouteFinder:
 					print "Couldn't find route from " + str(origin) + " to " + str(dest)
 					return None
 			return self.cache[(origin,dest)]
-	
+
 		def save_cache(self):
 			pickle.dump(self.cache, open(self.cache_file, "wb"))
+
+
+
 	instance = None
 	def __init__(self, keyfile=None, cache_file=None):
 		if not RouteFinder.instance:
