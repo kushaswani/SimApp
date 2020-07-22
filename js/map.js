@@ -60,7 +60,42 @@ var package_wait_times = [
 var c_taxi_time=0;
 var t_taxi_time=0;
 
+var charging_stations = [
+    [114.007401,22.5355],
+    [114.0090009,22.53423323],
+    [113.987547,22.560519],
+    [114.088303,22.562599],
+    [114.361504,22.678499],
+    [114.074406,22.559],
+    [113.922977,22.546375],
+    [114.123241,22.562538],
+    [114.101748,22.582541],
+    [114.068837,22.573326],
+    [114.023404,22.54265],
+    [114.023902,22.619512],
+    [113.81775,22.650682],
+    [113.944128,22.506854],
+    [113.941642,22.527053],
+    [113.962844,22.528519],
+    [113.8149322,22.6513225],
+    [114.304419,22.600844],
+    [114.032902,22.524276],
+    [113.85839,22.579457],
+    [113.995054,22.547247],
+    [114.003978,22.636233],
+    [114.045125,22.55141],
+    [113.838486,22.609576],
+    [114.043404,22.601],
+    [113.985199,22.547701],
+    [113.8134,22.624201],
+    [114.135002,22.544001],
+    [114.353401,22.679399],
+    [113.8564,22.616899],
+    [114.031502,22.5252],
+    [114.1798,22.5585]
+];
 
+var image = "http://maps.google.com/mapfiles/ms/icons/gas.png";
 // window.localStorage.setItem(id, json string)
 
 
@@ -1010,7 +1045,6 @@ function tripChanged(trip) {
 
 }
 
-
 function fileChanged(event) {
     var csv = event.target.files[0];
     Papa.parse(csv, {
@@ -1067,12 +1101,20 @@ window.onload = function() {
       //zoom: 14,
       zoom: 11,
       //center: new Maps.LatLng(42.359456, -71.076336),
-      center: new Maps.LatLng(22.7004312,113.9264277),
+      center: new Maps.LatLng(22.6004312,113.9264277),
       mapTypeId: Maps.MapTypeId.ROADMAP,
       mapTypeControl: false,
       streetViewControl: false,
       zoomControl: false
   });
+
+    for (var i = 0; i < 32; i++){
+        var marker = new google.maps.Marker({
+            position: { lat:charging_stations[i][1], lng: charging_stations[i][0] },
+            icon: image,
+            map:map
+        });
+    }
     map.setOptions({styles: darkMap});
     document.getElementById("trip-file").value = "";
     document.getElementById("bothBtn").disabled = true;
