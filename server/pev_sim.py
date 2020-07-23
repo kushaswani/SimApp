@@ -41,10 +41,9 @@ class Sim_env:
 		## create a set of 30-minute buckets
 		## iterate over history
 		## for each trip in history, apply to relevant buckets
-		## utilization should be passengers or parcels * minutes of trip / bucket size
+		## utilization should be passengers or CHARGING * minutes of trip / bucket size
 		## emissions should be total distance of any sort. For trips that span multiple buckets,
 		## the distance should be prorated into each bucket
 
 		## For getting wait times:
 		## TODO: strategerize this one?
-

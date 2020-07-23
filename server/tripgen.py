@@ -16,25 +16,31 @@ def readNewburyTestData():
 			## Pickup time
 			## Pickup address
 			## Pickup latitude
-			## Pickup Longitude	
+			## Pickup Longitude
 			## Dropoff Time
 			## Dropoff address
 			## Dropoff Latitude
 			## Dropoff Longitude
 			try:
+
+				if int(row[9])==1:
+					# print('test')
+					is_human = False
+				else:
+					is_human = True
+				print(is_human)
 				start = (float(row[4]), float(row[3]))
 				dest = (float(row[8]), float(row[7]))
+				charging_time = float(row[10])
 				trips.append(trip.Pickup(
 					int(row[0]),
 					sim_util.timeify(row[1]),
-					start, 
+					start,
 					dest,
-					True) ## TODO packages?
+					is_human,
+					charging_time) ## TODO packages?
 				)
 			except ValueError:
 				pass
 	## sort
 	return sorted(trips, key=lambda task:task.getTimeOrdered())
-
-
-

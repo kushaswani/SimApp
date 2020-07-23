@@ -5,6 +5,7 @@ import googlemaps
 import cPickle as pickle
 import atexit
 import sys
+import re
 
 class RouteFinder:
 	class __RF:
@@ -34,6 +35,8 @@ class RouteFinder:
 					print(self.client)
 					# route = self.client.directions(origin, dest, mode="bicycling")
 					route = self.client.directions(origin, dest, mode="driving")
+					# print(route[0]['legs'][0]['duration']['text'])
+
 
 				except googlemaps.exceptions.Timeout:
 					print "Request timed out for " + str(origin) + " to " + str(dest)

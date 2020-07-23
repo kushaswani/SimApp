@@ -1,9 +1,12 @@
 ## TODO a model for a fleet of PEVs in a city
 
 import sim_util as util
-import trip
+import trip as global_trip
 import fsched
 import routes
+import re
+import random
+
 
 class Dispatch:
 	def __init__(self, start, end, kind, route, dest, wait_time):
@@ -86,7 +89,7 @@ class Vehicle:
 		for i in xrange(len(self.history) - 1):
 			errstring = "[" + str(i) + "].end " + self.history[i].kind + "= " + str(self.history[i].end) + " != [" + str(i + 1) + "].start (" + self.history[i+1].kind + " = " + str(self.history[i + 1].start)
 			assert(self.history[i].end == self.history[i + 1].start), errstring
-			
+
 	def lastScheduledTime(self):
 		return self.history[-1].end
 
@@ -107,10 +110,10 @@ class Vehicle:
 		return self.uid
 
 	def getActionAt(self, time_window):
-		## TODO return PASSENGER, PARCEL, BOTH, or NONE depending
+		## TODO return PASSENGER, CHARGING, BOTH, or NONE depending
 		## on what the vehicle is being used for in that window
 		passenger = False
-		parcel = False
+		CHARGING = False
 		## TODO binary search for efficiency (?)
 		for d in self.history:
 			if d.start > time_window[1]:
@@ -118,14 +121,14 @@ class Vehicle:
 			elif d.end >= time_window[0]:
 				if d.kind == "PASSENGER":
 					passenger = True
-				elif d.kind == "PARCEL":
-					parcel = True
-		if passenger and parcel:
+				elif d.kind == "CHARGING":
+					CHARGING = True
+		if passenger and CHARGING:
 			return "BOTH"
 		elif passenger:
 			return "PASSENGER"
-		elif parcel:
-			return "PARCEL"
+		elif CHARGING:
+			return "CHARGING"
 		else:
 			return None
 
@@ -158,7 +161,7 @@ class Vehicle:
 		idx = 0
 		for t in xrange(start, end, t_bucket):
 			human_util = 0.
-			parcel_util = 0.
+			CHARGING_util = 0.
 			infra_util = 0.
 			while idx < len(self.history) and (t >= self.history[idx].end):
 				idx += 1
@@ -166,12 +169,12 @@ class Vehicle:
 				frac = float(min(t + t_bucket, self.history[idx].end) - max(t, self.history[idx].start)) / t_bucket
 				if self.history[idx].kind == "PASSENGER":
 					human_util += frac
-				elif self.history[idx].kind == "PARCEL":
-					parcel_util += frac
+				elif self.history[idx].kind == "CHARGING":
+					CHARGING_util += frac
 				elif self.history[idx].kind == "NAV":
 					infra_util += frac
 				idx += 1
-			out.append((human_util, parcel_util, infra_util))
+			out.append((human_util, CHARGING_util, infra_util))
 		return out
 
 class Fleet:
@@ -180,19 +183,40 @@ class Fleet:
 		start_loc = start_loc
 		for i in xrange(fleet_size):
 			self.vehicles.append(
-				Vehicle(i, True, start_loc))		
+				Vehicle(i, True, start_loc))
 
-		
+
 	def assign_task(self, trip):
 		## TODO args, return?
-		t = trip.getTimeOrdered()
-		for v in self.vehicles:
-			v.update(t)
-		try:
-			(vid, wait) = fsched.assign(t, trip, self)
-			print "task " + str(trip.getID()) + " assigned to vehicle " + str(vid) + " with wait of " + str(wait)
-		except:
-			print "Unable to assign task " + str(trip.getID()) + " to any vehicle"
+		if trip.is_human:
+			t = trip.getTimeOrdered()
+			for v in self.vehicles:
+				v.update(t)
+			try:
+				(vid, wait) = fsched.assign(t, trip, self)
+				print "task " + str(trip.getID()) + " assigned to vehicle " + str(vid) + " with wait of " + str(wait)
+			except:
+				print "Unable to assign task " + str(trip.getID()) + " to any vehicle"
+		else:
+			self.vehicles.append(
+				Vehicle(len(self.vehicles), True, trip.start_loc))
+			self.vehicles[-1].assign(trip,0)
+			print(trip.route)
+			temp = list(map(int, re.findall(r'\d+', trip.route.rte['legs'][0]['duration']['text']) ))
+			wait_time_ = (trip.time_ordered + (temp[0]*60))
+			print('Time Difference')
+			print(trip.time_ordered)
+			print(wait_time_)
+			temp_trip = global_trip.Pickup(
+				random.randint(0,10000),
+				wait_time_,
+				trip.dest_loc,
+				(22.534901,114.007896),
+				True,
+				0)
+			self.vehicles[-1].assign(temp_trip,trip.charging_time)
+
+
 
 	def finishUp(self):
 		end = 0
@@ -214,14 +238,14 @@ class Fleet:
 		out = []
 		for i in xrange(lenLongest):
 			human = 0
-			parcel = 0
+			CHARGING = 0
 			infrastructural = 0
 			for u in utils:
 				if i < len(u):
 					human += u[i][0]
-					parcel += u[i][1]
+					CHARGING += u[i][1]
 					infrastructural += u[i][2]
-			triple = (human / denom, parcel / denom, infrastructural / denom)
+			triple = (human / denom, CHARGING / denom, infrastructural / denom)
 			out.append(triple)
 		return out
 
@@ -245,8 +269,8 @@ class Fleet:
 			emissions = emissions * coeff
 			out.append(emissions)
 		return out
-		
-		
+
+
 
 	def __getitem__(self, key):
 		return self.vehicles[key]

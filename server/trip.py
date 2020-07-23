@@ -5,16 +5,21 @@ import routes
 import sim_util
 
 class Pickup:
-	def __init__(self, uid, time, start, dest, is_human, route=None):
+	def __init__(self, uid, time, start, dest, is_human, charging_time, route=None):
 		self.uid = uid
 
 		## convert to seconds after midnight
-		self.time_ordered = sim_util.seconds_since_midnight(time)
-
+		# print(time)
+		try:
+			self.time_ordered = sim_util.seconds_since_midnight(time)
+		except:
+			self.time_ordered = time
+		# print(self.time_ordered)
 		self.start_loc = start
 		self.dest_loc = dest
 		self.is_human = is_human
 		self.pickup = 0
+		self.charging_time = charging_time
 		if route is None:
 			self.routefind()
 		else:
@@ -27,8 +32,8 @@ class Pickup:
 		return sim_util.ll_dist_m(self.start_loc, self.dest_loc) / 4.47
 
 	def routefind(self):
-		print(self.start_loc)
-		print(self.dest_loc)
+		# print(self.start_loc)
+		# print(self.dest_loc)
 		# print(routes.RouteFinder().client)
 		self.route = routes.RouteFinder().get_dirs(self.start_loc, self.dest_loc)
 		if self.route is None:
@@ -48,7 +53,7 @@ class Pickup:
 		if self.is_human:
 			return "PASSENGER"
 		else:
-			return "PARCEL"
+			return "CHARGING"
 
 	def getRoute(self):
 		return self.route

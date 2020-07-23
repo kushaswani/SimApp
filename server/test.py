@@ -12,7 +12,7 @@ import json
 routes.RouteFinder("google_api_key", ".routes_cache")
 
 # env = pev_sim.Sim_env(3, None, (42.3492699,-71.0900377))
-env = pev_sim.Sim_env(3, None, (22.534901,114.007896))
+env = pev_sim.Sim_env(6, None, (22.534901,114.007896))
 
 testdata = tripgen.readNewburyTestData()
 

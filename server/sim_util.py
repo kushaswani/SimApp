@@ -11,7 +11,7 @@ def ll_dist_m(a, b):
 	return great_circle(a, b).meters
 
 def timeify(s):
-	return strptime(s, "%m/%d/%y %I:%M %p") 
+	return strptime(s, "%m/%d/%y %I:%M %p")
 
 def seconds_since_midnight(ts):
 	if type(ts) is int:
@@ -21,4 +21,3 @@ def seconds_since_midnight(ts):
 
 def default_json(o):
 	return o.__dict__
-

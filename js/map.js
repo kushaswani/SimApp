@@ -538,9 +538,9 @@ function animateCars() {
                             path: fontawesome.markers.CUBE,
                             scale: 0.5,
                             strokeWeight: 0.1,
-                            strokeColor: '#FF8000',
+                            strokeColor: '#06c906',
                             strokeOpacity: 1,
-                            fillColor: '#FF8000',
+                            fillColor: '#06c906',
                             fillOpacity: 1
                         },
                         clickable: false,
@@ -625,7 +625,7 @@ function drawCarStuff(car) {
                 var dest = new Maps.LatLng(ctask.dest[0], ctask.dest[1]);
                 sim_passDropoffs.push(dest);
             }
-            else if (ctask.kind == "PARCEL") {
+            else if (ctask.kind == "CHARGING") {
                 var dest = new Maps.LatLng(ctask.dest[0], ctask.dest[1]);
                 sim_parcDropoffs.push(dest);
             }
@@ -702,9 +702,9 @@ function drawCarStuff(car) {
                 }
                 car.curTaskRender.setMap(map);
                 break;
-            case 'PARCEL':
+            case 'CHARGING':
                 if (newTask) {
-                    ctask['color'] = '#FF8000'
+                    ctask['color'] = '#06c906'
                     // Draw a line from the car's polyline
                     var polyline = polylineFromTask(ctask);
 
