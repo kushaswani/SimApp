@@ -97,6 +97,7 @@ class Route:
 		self.path = route[0]["overview_polyline"] ## TODO handle the alternate routes?
 		dist = 0
 		dur = 0
+		# temp = list(map(int, re.findall(r'\d+', self.route.rte['legs'][0]['duration']['text']) ))
 		for l in route[0]["legs"]:
 			dist += l["distance"]["value"]
 			dur += l["duration"]["value"]

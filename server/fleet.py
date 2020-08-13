@@ -198,23 +198,37 @@ class Fleet:
 			except:
 				print "Unable to assign task " + str(trip.getID()) + " to any vehicle"
 		else:
+			t = trip.getTimeOrdered()
 			self.vehicles.append(
 				Vehicle(len(self.vehicles), True, trip.start_loc))
-			self.vehicles[-1].assign(trip,0)
-			print(trip.route)
-			temp = list(map(int, re.findall(r'\d+', trip.route.rte['legs'][0]['duration']['text']) ))
-			wait_time_ = (trip.time_ordered + (temp[0]*60))
-			print('Time Difference')
-			print(trip.time_ordered)
-			print(wait_time_)
+			first_wait_time = self.vehicles[-1].assign(trip,t)
+			trip.setPickup(first_wait_time)
+			self.vehicles[-1].update(t)
+			temp_time_ordered = int(t + trip.trip_time) + int(trip.charging_waittime + trip.charging_time)
+			# print(trip.time_ordered)
 			temp_trip = global_trip.Pickup(
-				random.randint(0,10000),
-				wait_time_,
+				random.randint(1000,10000),
+				temp_time_ordered,
+				None,
 				trip.dest_loc,
 				(22.534901,114.007896),
 				True,
+				0,
 				0)
-			self.vehicles[-1].assign(temp_trip,trip.charging_time)
+			# self.vehicles[-1].assign(temp_trip,int(trip.charging_waittime + trip.charging_time))
+			second_wait_time = self.vehicles[-1].assign(temp_trip,temp_time_ordered)
+			temp_trip.setPickup(second_wait_time)
+			self.vehicles[-1].update(temp_time_ordered)
+
+			try:
+				print("Charging Trip")
+				(vid, wait) = (len(self.vehicles),first_wait_time)
+				print "task " + str(trip.getID()) + " assigned to vehicle " + str(vid) + " with wait of " + str(wait)
+				(vid, wait) = (len(self.vehicles),second_wait_time)
+				print "task " + str(temp_trip.getID()) + " assigned to vehicle " + str(vid) + " with wait of " + str(wait)
+				print()
+			except:
+				print "Unable to assign task " + str(trip.getID()) + " to any vehicle"
 
 
 

@@ -95,7 +95,10 @@ var charging_stations = [
     [114.1798,22.5585]
 ];
 
-var image = "http://maps.google.com/mapfiles/ms/icons/gas.png";
+// var charging_station_image = "http://maps.google.com/mapfiles/ms/icons/gas.png";
+var charging_station_image = "icons/charging-station-solid.svg";
+var waittime_image = "icons/waittime.svg";
+var charging_image = "icons/ezgif.com-resize.gif";
 // window.localStorage.setItem(id, json string)
 
 
@@ -268,6 +271,7 @@ function test_fleet_sim() {
     };
     console.log(sim_params);
     $.post( '/server/sim2.json', JSON.stringify(sim_params), function( data ) {
+        console.log("data");
         console.log(data);
         sim_data = data;
         animateCars();
@@ -503,9 +507,12 @@ function animateCars() {
             }
         }
 
+        // console.log("trips length");
+        // console.log(sim_data.trips.length);
         if (sim_data.curTask < sim_data.trips.length) {
-
             while (sim_data.tstep >= sim_data.trips[sim_data.curTask].time_ordered) {
+
+
                 // draw the caller
                 // xxx
                 // console.log(sim_data.trips[sim_data.curTask])
@@ -514,7 +521,18 @@ function animateCars() {
                 //drawEmissionChart(emissions);
                 calculateTripWaitTime(sim_data.trips[sim_data.curTask]);
                 var origin = {lat: sim_data.trips[sim_data.curTask].start_loc[0], lng: sim_data.trips[sim_data.curTask].start_loc[1]};
+                var dest = {lat: sim_data.trips[sim_data.curTask].dest_loc[0], lng: sim_data.trips[sim_data.curTask].dest_loc[1]};
                 var marker;
+                var marker2 = 'initial';
+                var marker3 = 'initial';
+                var marker3;
+                var temp_charging_time = sim_data.trips[sim_data.curTask].charging_time
+                var temp_time_ordered = sim_data.trips[sim_data.curTask].time_ordered
+                var temp_trip_time = sim_data.trips[sim_data.curTask].trip_time
+
+
+
+
                 if (sim_data.trips[sim_data.curTask].is_human) {
                     marker = new Maps.Marker({
                         position: origin,
@@ -530,24 +548,30 @@ function animateCars() {
                         },
                         clickable: false,
                     });
-                } else {
-                    marker = new Maps.Marker({
-                        position: origin,
-                        map: map,
-                        icon: {
-                            path: fontawesome.markers.CUBE,
-                            scale: 0.5,
-                            strokeWeight: 0.1,
-                            strokeColor: '#06c906',
-                            strokeOpacity: 1,
-                            fillColor: '#06c906',
-                            fillOpacity: 1
-                        },
-                        clickable: false,
-                    });
+                    marker.info = {};
+
                 }
-                marker.info = {};
+
+                // else {
+                //     console.log('Not human');
+                //     console.log(sim_data.tstep);
+                //     console.log(temp_time_ordered);
+                //     console.log(temp_trip_time);
+                //     marker2 = new Maps.Marker({
+                //         position: dest,
+                //         map: map,
+                //         icon: charging_image,
+                //         clickable: false,
+                //     });
+                //     marker2.info = {};
+                //
+                // }
+
+
+
                 sim_data.trips[sim_data.curTask]['marker'] = marker;
+                sim_data.trips[sim_data.curTask]['marker2'] = marker2;
+                sim_data.trips[sim_data.curTask]['marker3'] = marker3;
 
                 sim_data.shown.push(sim_data.curTask);
 
@@ -563,21 +587,106 @@ function animateCars() {
             // TODO use a heap implementation for speed ?
             for (var i = 0; i < sim_data.shown.length; i++) {
                 var tripIdx = sim_data.shown[i];
-                if (sim_data.trips[tripIdx].pickup <= sim_data.tstep) {
-                    // remove element
-                    sim_data.trips[tripIdx].marker.setMap(null);
-                    if (sim_data.trips[tripIdx].is_human) {
+                if (sim_data.trips[tripIdx].is_human) {
+                    if (sim_data.trips[tripIdx].pickup <= sim_data.tstep) {
+                        sim_data.trips[tripIdx].marker.setMap(null);
                         sim_passPickups.push(sim_data.trips[tripIdx].marker.position);
-                    } else {
-                        sim_parcPickups.push(sim_data.trips[tripIdx].marker.position);
+
+                        sim_data.trips[tripIdx].marker = null;
+                        sim_data.shown.splice(i, 1);
+                        i--; // I hate doing this
                     }
-                    sim_data.trips[tripIdx].marker = null;
 
-                    // remove element at [i]
-                    sim_data.shown.splice(i, 1);
-                    i--; // I hate doing this
                 }
+                else{
 
+
+                    if ((sim_data.trips[tripIdx].time_ordered + sim_data.trips[tripIdx].trip_time + sim_data.trips[tripIdx].charging_time + sim_data.trips[tripIdx].charging_waittime) <= sim_data.tstep){
+                        try{
+                          sim_data.trips[tripIdx].marker2.setMap(null);
+                          sim_parcPickups.push(sim_data.trips[tripIdx].marker2.position);
+
+                          sim_data.trips[tripIdx].marker2 = null;
+                          sim_data.shown.splice(i, 1);
+                          i--; // I hate doing this
+
+                          console.log('deleted');
+                          console.log(sim_data.trips[tripIdx].marker2);
+                        } catch(err){
+                          console.log('already deleted');
+                          console.log(sim_data.trips[tripIdx].marker2);
+                        }
+                    }
+
+                    else if ((sim_data.trips[tripIdx].time_ordered + sim_data.trips[tripIdx].trip_time + sim_data.trips[tripIdx].charging_waittime) <= sim_data.tstep){
+                        try{
+                            sim_data.trips[tripIdx].marker3.setMap(null);
+                            sim_parcPickups.push(sim_data.trips[tripIdx].marker2.position);
+
+                            sim_data.trips[tripIdx].marker3 = null;
+                            // sim_data.shown.splice(i, 1);
+                            // i--; // I hate doing this
+                        }
+                        catch (err){
+                          console.log('already deleted');
+                          console.log(sim_data.trips[tripIdx].marker3);
+                        }
+
+
+                        console.log('deleted');
+                        console.log(sim_data.trips[tripIdx].marker3);
+
+
+                        var dest2 = {lat: sim_data.trips[tripIdx].dest_loc[0], lng: sim_data.trips[tripIdx].dest_loc[1]};
+
+                        if (sim_data.trips[tripIdx].marker2=='initial') {
+                          sim_data.trips[tripIdx].marker2 = new Maps.Marker({
+                              position: dest2,
+                              map: map,
+                              icon: charging_image,
+                              clickable: false,
+                          });
+                          sim_data.trips[tripIdx].marker2.info = {};
+                        }
+
+                    }
+
+                    else if ((sim_data.trips[tripIdx].time_ordered + sim_data.trips[tripIdx].trip_time) <= sim_data.tstep){
+                        var dest2 = {lat: sim_data.trips[tripIdx].dest_loc[0], lng: sim_data.trips[tripIdx].dest_loc[1]};
+                        if (sim_data.trips[tripIdx].marker3=='initial') {
+                          sim_data.trips[tripIdx].marker3 = new Maps.Marker({
+                              position: dest2,
+                              map: map,
+                              icon: waittime_image,
+                              clickable: false,
+                          });
+                          sim_data.trips[tripIdx].marker3.info = {};
+                        }
+
+                    }
+
+                    // else if ((sim_data.trips[tripIdx].time_ordered + sim_data.trips[tripIdx].trip_time + sim_data.trips[tripIdx].charging_waittime) <= sim_data.tstep){
+                    //     var dest_2 = {lat: sim_data.trips[tripIdx].dest_loc[0], lng: sim_data.trips[tripIdx].dest_loc[1]};
+                    //     // console.log('Not human update');
+                    //     // console.log(sim_data.tstep);
+                    //     // console.log(sim_data.trips[tripIdx].time_ordered);
+                    //     // console.log(sim_data.trips[tripIdx].trip_time);
+                    //     // console.log(sim_data.trips[tripIdx].charging_waittime);
+                    //     // console.log(dest_2);
+                    //     sim_data.trips[tripIdx].marker3.setMap(null);
+                    //     sim_data.trips[tripIdx].marker3 = null;
+                    //     sim_data.trips[tripIdx].marker2 = new Maps.Marker({
+                    //         position: dest_2,
+                    //         map: map,
+                    //         icon: charging_image,
+                    //         clickable: false,
+                    //     });
+                    //     sim_data.trips[tripIdx].marker2.info = {};
+                    //
+                    // }
+
+
+                }
             }
         }
 
@@ -618,6 +727,7 @@ function drawCarStuff(car) {
         }
 
         // update the car to the tstep
+
         var ctask = car.history[car.current]
         while (sim_data.tstep >= ctask.end) {
             if (ctask.kind == "PASSENGER") {
@@ -680,6 +790,7 @@ function drawCarStuff(car) {
                     car.curTaskRender = polyline;
                 } else {
                     var icons = car.curTaskRender.get('icons');
+                    // icons[0].offset = ( ((sim_data.tstep - ctask.start) / (ctask.route.duration)) * 100 ) + '%'; // google maps api stuff here
                     icons[0].offset = ( ((sim_data.tstep - ctask.start) / (ctask.route.duration)) * 100 ) + '%'; // google maps api stuff here
                     car.curTaskRender.set('icons', icons);
                 }
@@ -697,6 +808,7 @@ function drawCarStuff(car) {
 
                 } else {
                     var icons = car.curTaskRender.get('icons');
+                    // icons[0].offset = ( ((sim_data.tstep - ctask.start) / (ctask.route.duration)) * 100 ) + '%'; // google maps api stuff here
                     icons[0].offset = ( ((sim_data.tstep - ctask.start) / (ctask.route.duration)) * 100 ) + '%'; // google maps api stuff here
                     car.curTaskRender.set('icons', icons);
                 }
@@ -713,6 +825,9 @@ function drawCarStuff(car) {
 
                 } else {
                     var icons = car.curTaskRender.get('icons');
+                    // console.log('ctask');
+                    // console.log(ctask);
+                    // icons[0].offset = ( ((sim_data.tstep - ctask.start) / (ctask.route.duration)) * 100 ) + '%'; // google maps api stuff here
                     icons[0].offset = ( ((sim_data.tstep - ctask.start) / (ctask.route.duration)) * 100 ) + '%'; // google maps api stuff here
                     car.curTaskRender.set('icons', icons);
                 }
@@ -1068,6 +1183,8 @@ function fileChanged(event) {
                 };
 
                 trips.push(trip);
+                console.log('test')
+                console.log(trip)
             }
         },
         complete: function() {
@@ -1111,7 +1228,7 @@ window.onload = function() {
     for (var i = 0; i < 32; i++){
         var marker = new google.maps.Marker({
             position: { lat:charging_stations[i][1], lng: charging_stations[i][0] },
-            icon: image,
+            icon: charging_station_image,
             map:map
         });
     }

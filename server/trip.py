@@ -3,27 +3,40 @@
 
 import routes
 import sim_util
+import re
 
 class Pickup:
-	def __init__(self, uid, time, start, dest, is_human, charging_time, route=None):
+	def __init__(self, uid, time_ordered, trip_time, start, dest, is_human, charging_time, charging_waittime, route=None):
 		self.uid = uid
 
 		## convert to seconds after midnight
 		# print(time)
-		try:
-			self.time_ordered = sim_util.seconds_since_midnight(time)
-		except:
-			self.time_ordered = time
+
+		# try:
+		# 	self.time_ordered = sim_util.seconds_since_midnight(time)
+		# except:
+		# 	self.time_ordered = time
+
+		self.time_ordered = time_ordered
+
+		self.trip_time = trip_time
 		# print(self.time_ordered)
 		self.start_loc = start
 		self.dest_loc = dest
-		self.is_human = is_human
+		self.is_human = bool(is_human)
 		self.pickup = 0
 		self.charging_time = charging_time
+		self.charging_waittime = charging_waittime
 		if route is None:
 			self.routefind()
 		else:
 			self.route = route
+
+		if trip_time is None:
+			temp = list(map(int, re.findall(r'\d+', self.route.rte['legs'][0]['duration']['text']) ))
+			self.trip_time = temp[0]*60
+		else:
+			self.route.duration = trip_time 
 		## TODO: differing fare priority
 		## TODO: arrival time for packages
 
