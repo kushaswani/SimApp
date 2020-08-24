@@ -1,10 +1,10 @@
 import random
 import time
-import cPickle as pickle
-import routes
+import pickle as pickle
 import csv
-from sets import Set
 
+
+import routes
 import sim_util
 import trip
 
@@ -34,7 +34,7 @@ class TripRandomizer:
 			with open(TripRandomizer.instance.locs_file, 'r') as f:
 				TripRandomizer.instance.locs = pickle.load(f)
 		except IOError:
-			print "Could not open file " + locs_file
+			print("Could not open file " + locs_file)
 		except Exception as e:
 			raise(e)
 
@@ -45,7 +45,7 @@ class TripRandomizer:
 			with open(TripRandomizer.instance.rides_file, 'r') as f:
 				TripRandomizer.instance.trips = pickle.load(f)
 		except IOError:
-			print "Could not open file " + rides_file
+			print("Could not open file " + rides_file)
 		except Exception as e:
 			raise(e)
 
@@ -70,24 +70,24 @@ class TripRandomizer:
 			return random.sample(TripRandomizer.instance.locs, 2)
 		scaleFactor = 4
 		pulledPoints = random.sample(TripRandomizer.instance.locs, scaleFactor)
-	
+
 		## low-overhead O(n^2) algorithm with some
 		## intelligence to reduce duplicated work
 		## Probably somewhat fast for large maxDist
 		checked = 0
 		while True:
 			## invariant: no pairs (pp[i], pp[j]) for i, j < checked qualify (are nearer than maxDist)
-			for i in xrange(checked, len(pulledPoints)):
-				for j in xrange(len(pulledPoints)):
+			for i in range(checked, len(pulledPoints)):
+				for j in range(len(pulledPoints)):
 					if i != j and sim_util.ll_dist_m(pulledPoints[i], pulledPoints[j]) <= maxDist:
 						return (pulledPoints[i], pulledPoints[j])
 			checked = len(pulledPoints)
 			pulledPoints.extend(random.sample(TripRandomizer.instance.locs, scaleFactor))
 
 	def randomizedPreprocessedRides(self, frequency, maxDist, start, end):
-		print "Generating from " + str(len(TripRandomizer.instance. trips)) + " source trips"
+		print("Generating from " + str(len(TripRandomizer.instance. trips)) + " source trips")
 		tripTimes = getRandomTripTimes(frequency, start, end)
-		print "generating trips for " + str(len(tripTimes)) + " times"
+		print("generating trips for " + str(len(tripTimes)) + " times")
 
 		if len(TripRandomizer.instance.trips) < len(tripTimes):
 			## if we don't have enough trips, randomly generate a few more
@@ -98,13 +98,13 @@ class TripRandomizer:
 			idx += 1
 			if t.dist > float(maxDist):
 				break
-		print "found " + str(idx - 1) + " trips shorter than " + str(maxDist)
+		print("found " + str(idx - 1) + " trips shorter than " + str(maxDist))
 		random.seed()
 		if idx - 1 < len(tripTimes):
-			rides = [random.sample(TripRandomizer.instance.trips[:idx], 1) for i in xrange(len(tripTimes))]
-			return zip(tripTimes, rides)
+			rides = [random.sample(TripRandomizer.instance.trips[:idx], 1) for i in range(len(tripTimes))]
+			return list(zip(tripTimes, rides))
 		else:
-			return zip(tripTimes, random.sample(TripRandomizer.instance.trips[:idx], len(tripTimes)))
+			return list(zip(tripTimes, random.sample(TripRandomizer.instance.trips[:idx], len(tripTimes))))
 
 	def assembleTripSim(self, hMaxDist, hFreq, pMaxDist, pFreq, start, end):
 		humanRiders = self.randomizedPreprocessedRides(hFreq, hMaxDist, start, end)
@@ -123,16 +123,16 @@ class TripRandomizer:
 	def genRides(self, maxDist, total):
 		f = routes.RouteFinder()
 		tn = total / (maxDist / 800)
-		
-		for rideDist in xrange(0, maxDist, 800):
-			for i in xrange(tn):
+
+		for rideDist in range(0, maxDist, 800):
+			for i in range(tn):
 				(start, dest) = self.getTripLocation(rideDist)
 				rte = f.get_dirs(start, dest)
 				if rte is not None:
 					TripRandomizer.instance.trips.append(Ride(start, dest, sim_util.ll_dist_m(start, dest), rte))
-		
+
 		TripRandomizer.instance.trips.sort(key=lambda x: x.dist)
-		
+
 		self.saveRidesFile()
 
 
@@ -152,12 +152,7 @@ def getRandomTripTimes(frequency, start, end):
 	mu = frequency * float(end - start) / 3600
 	num_trips = int(random.gauss(mu, mu / 10))
 	out = []
-	for i in xrange(num_trips):
+	for i in range(num_trips):
 		out.append(random.randint(start, end))
 	out.sort()
 	return out
-
-
-	
-
-

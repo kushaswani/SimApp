@@ -1,12 +1,16 @@
 ## TODO an algorithm for assigning a task to a fleet
 ## Should run on-line (that is, without knowledge of
 ## upcoming tasks)
-import fleet
-from sets import Set
+
+try:
+	import fleet
+except:
+	from server import fleet
+
 
 def assign(time, task, fleet):
 	## strawman - assign task to soonest free member
-	illegal = Set([])
+	illegal = set([])
 	while len(illegal) < len(fleet.vehicles):
 		assignee = None
 		for pev in fleet:
@@ -15,7 +19,7 @@ def assign(time, task, fleet):
 					assignee = pev
 				elif pev.soonestFreeAfter(time) < assignee.soonestFreeAfter(time):
 					assignee = pev
-		try: 
+		try:
 			wait_time = assignee.assign(task, time)
 			task.setPickup(wait_time)
 			return (assignee.getUID(), wait_time)

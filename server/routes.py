@@ -2,7 +2,7 @@
 ## TODO create a more useful, space-efficient data type for the routes
 
 import googlemaps
-import cPickle as pickle
+import pickle as pickle
 import atexit
 import sys
 import re
@@ -15,12 +15,13 @@ class RouteFinder:
 				with open(keyfile, 'r') as f:
 					api_key = f.read().rstrip()
 			except:
-				print "It looks like you need a google api key"
+				print("It looks like you need a google api key")
 				sys.exit(1)
 			self.client = googlemaps.Client(key=api_key)
 			try:
-	        		with open(cache_file, "rb") as c:
+				with open(cache_file, "rb") as c:
 					self.cache = pickle.load(c)
+
 			except IOError:
 				self.cache = {}
 			self.cache_file = cache_file
@@ -32,23 +33,23 @@ class RouteFinder:
 				route = None
 
 				try:
-					print(self.client)
+					print((self.client))
 					# route = self.client.directions(origin, dest, mode="bicycling")
 					route = self.client.directions(origin, dest, mode="driving")
 					# print(route[0]['legs'][0]['duration']['text'])
 
 
 				except googlemaps.exceptions.Timeout:
-					print "Request timed out for " + str(origin) + " to " + str(dest)
+					print("Request timed out for " + str(origin) + " to " + str(dest))
 					return None
 				except Exception as e:
-					print "Routefinding failed for " + str(origin) + " to " + str(dest)
-					print "Encountered Exception: " + str(type(e)) + str(e.args)
+					print("Routefinding failed for " + str(origin) + " to " + str(dest))
+					print("Encountered Exception: " + str(type(e)) + str(e.args))
 					return None
 				if route:
 					self.cache[(origin, dest)] = Route(route)
 				else:
-					print "Couldn't find route from " + str(origin) + " to " + str(dest)
+					print("Couldn't find route from " + str(origin) + " to " + str(dest))
 					return None
 			return self.cache[(origin,dest)]
 
@@ -112,5 +113,5 @@ class Route:
 
 @atexit.register
 def goodbye():
-	print "exiting..."
+	print("exiting...")
 	RouteFinder.instance.save_cache()

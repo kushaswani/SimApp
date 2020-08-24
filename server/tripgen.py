@@ -1,15 +1,33 @@
 #TODO random trip generation
 #TODO allow user to supply trip file
-import csv
-import trip
-import sim_util
 
-def readNewburyTestData():
-	path = "../dataprocessing/filtered-street.csv"
+try:
+	import trip
+except:
+
+	from server import trip
+try:
+	import sim_util
+except:
+	from server import sim_util
+
+import csv
+
+def readNewburyTestData(test):
+	if test:
+		path = "../dataprocessing/test_sim.csv"
+	else:
+		path = "dataprocessing/run_sim.csv"
 	## TODO pop out into method
 	trips = []
+	print(path)
 	with open(path, 'r') as file:
 		reader = csv.reader(file)
+		fields = reader.__next__()
+		dict_ = {}
+		# print(fields)
+		for i,field in enumerate(fields):
+			dict_[field] = i
 		for row in reader:
 			## Row format: (for this one file)
 			## ID
@@ -23,30 +41,33 @@ def readNewburyTestData():
 			## Dropoff Longitude
 			try:
 
-				if int(row[9])==1:
+				if int(row[dict_['charging']])==1:
 					# print('test')
 					is_human = False
+					is_charging = True
 				else:
 					is_human = True
+					is_charging = False
 				# print(is_human)
-				start = (float(row[4]), float(row[3]))
-				dest = (float(row[8]), float(row[7]))
-				charging_time = float(row[10])
-				charging_waittime = float(row[11])
+				start = (float(row[dict_['start_lat']]), float(row[dict_['start_lon']]))
+				dest = (float(row[dict_['end_lat']]), float(row[dict_['end_lon']]))
+				charging_time = float(row[dict_['charging_time']])
+				charging_waittime = float(row[dict_['charging_time']])
 
-				ts = sim_util.timeify(row[1])
+				ts = sim_util.timeify(row[dict_['start_time']])
 				time_ordered = sim_util.seconds_since_midnight(ts)
 
-				ts = sim_util.timeify(row[5])
+				ts = sim_util.timeify(row[dict_['end_time']])
 				trip_time = sim_util.seconds_since_midnight(ts) - time_ordered
 
 				trips.append(trip.Pickup(
-					int(row[0]),
+					int(row[dict_['trip_id']]),
 					time_ordered,
 					trip_time,
 					start,
 					dest,
 					is_human,
+					is_charging,
 					charging_time,
 					charging_waittime) ## TODO packages?
 				)

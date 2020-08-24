@@ -1,9 +1,24 @@
 ## TODO a model for a fleet of PEVs in a city
 
-import sim_util as util
-import trip as global_trip
-import fsched
-import routes
+
+try:
+	import sim_util as util
+except:
+	from server import sim_util as util
+try:
+	import trip as global_trip
+except:
+	from server import trip as global_trip
+try:
+	import fsched
+except:
+	from server import fsched
+try:
+	import routes
+except:
+	from server import routes
+
+
 import re
 import random
 
@@ -77,7 +92,7 @@ class Vehicle:
 		try:
 			nav_dispatch = create_dispatch(self.soonestFreeAfter(time), self.history[-1].dest, task.getPickupLoc())
 		except Exception as e:
-			print "Encountered exception " + str(e)
+			print("Encountered exception " + str(e))
 			raise(e)
 		self.history.append(nav_dispatch)
 
@@ -86,7 +101,7 @@ class Vehicle:
 		return wait_time
 
 	def check_valid(self):
-		for i in xrange(len(self.history) - 1):
+		for i in range(len(self.history) - 1):
 			errstring = "[" + str(i) + "].end " + self.history[i].kind + "= " + str(self.history[i].end) + " != [" + str(i + 1) + "].start (" + self.history[i+1].kind + " = " + str(self.history[i + 1].start)
 			assert(self.history[i].end == self.history[i + 1].start), errstring
 
@@ -140,7 +155,7 @@ class Vehicle:
 			return out
 
 		idx = 0
-		for t in xrange(start, end, t_bucket):
+		for t in range(start, end, t_bucket):
 			dist_traveled = 0
 			while idx < len(self.history) and (t >= self.history[idx].end):
 				idx += 1
@@ -159,7 +174,7 @@ class Vehicle:
 			return out
 
 		idx = 0
-		for t in xrange(start, end, t_bucket):
+		for t in range(start, end, t_bucket):
 			human_util = 0.
 			CHARGING_util = 0.
 			infra_util = 0.
@@ -181,7 +196,7 @@ class Fleet:
 	def __init__(self, fleet_size, bounds, start_loc):
 		self.vehicles = []
 		start_loc = start_loc
-		for i in xrange(fleet_size):
+		for i in range(fleet_size):
 			self.vehicles.append(
 				Vehicle(i, True, start_loc))
 
@@ -194,9 +209,9 @@ class Fleet:
 				v.update(t)
 			try:
 				(vid, wait) = fsched.assign(t, trip, self)
-				print "task " + str(trip.getID()) + " assigned to vehicle " + str(vid) + " with wait of " + str(wait)
+				print("task " + str(trip.getID()) + " assigned to vehicle " + str(vid) + " with wait of " + str(wait))
 			except:
-				print "Unable to assign task " + str(trip.getID()) + " to any vehicle"
+				print("Unable to assign task " + str(trip.getID()) + " to any vehicle")
 		else:
 			t = trip.getTimeOrdered()
 			self.vehicles.append(
@@ -212,7 +227,8 @@ class Fleet:
 				None,
 				trip.dest_loc,
 				(22.534901,114.007896),
-				True,
+				False,
+				False,
 				0,
 				0)
 			# self.vehicles[-1].assign(temp_trip,int(trip.charging_waittime + trip.charging_time))
@@ -223,12 +239,12 @@ class Fleet:
 			try:
 				print("Charging Trip")
 				(vid, wait) = (len(self.vehicles),first_wait_time)
-				print "task " + str(trip.getID()) + " assigned to vehicle " + str(vid) + " with wait of " + str(wait)
+				print("task " + str(trip.getID()) + " assigned to vehicle " + str(vid) + " with wait of " + str(wait))
 				(vid, wait) = (len(self.vehicles),second_wait_time)
-				print "task " + str(temp_trip.getID()) + " assigned to vehicle " + str(vid) + " with wait of " + str(wait)
+				print("task " + str(temp_trip.getID()) + " assigned to vehicle " + str(vid) + " with wait of " + str(wait))
 				print()
 			except:
-				print "Unable to assign task " + str(trip.getID()) + " to any vehicle"
+				print("Unable to assign task " + str(trip.getID()) + " to any vehicle")
 
 
 
@@ -250,7 +266,7 @@ class Fleet:
 			utils.append(u)
 		## flatten
 		out = []
-		for i in xrange(lenLongest):
+		for i in range(lenLongest):
 			human = 0
 			CHARGING = 0
 			infrastructural = 0
@@ -275,7 +291,7 @@ class Fleet:
 		## give emissions in kilogram of cot
 		## based on .07 kg/km
 		coeff = .07 / 1000
-		for i in xrange(lenLongest):
+		for i in range(lenLongest):
 			emissions = 0
 			for ebv in emissionsByVehicle:
 				if i < len(ebv):

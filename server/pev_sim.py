@@ -1,7 +1,11 @@
 ## TODO run simulation of a fleet of PEVs carrying out a
 ## a set of pickup/dropoff tasks
 
-import fleet as pev
+
+try:
+	import fleet as pev
+except:
+	from server import fleet as pev
 
 class Sim_env:
 	def __init__(self, fleet_size, bounds, start_loc):

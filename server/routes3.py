@@ -2,7 +2,7 @@
 ## TODO create a more useful, space-efficient data type for the routes
 
 import googlemaps
-import cPickle as pickle
+import pickle as pickle
 import atexit
 import sys
 
@@ -32,16 +32,16 @@ class RouteFinder:
 				try:
 					route = self.client.directions(origin, dest, mode="bicycling")
 				except googlemaps.exceptions.Timeout:
-					print("Request timed out for " + str(origin) + " to " + str(dest))
+					print(("Request timed out for " + str(origin) + " to " + str(dest)))
 					return None
 				except Exception as e:
-					print("Routefinding failed for " + str(origin) + " to " + str(dest))
-					print("Encountered Exception: " + str(type(e)) + str(e.args))
+					print(("Routefinding failed for " + str(origin) + " to " + str(dest)))
+					print(("Encountered Exception: " + str(type(e)) + str(e.args)))
 					return None
 				if route:
 					self.cache[(origin, dest)] = Route(route)
 				else:
-					print("Couldn't find route from " + str(origin) + " to " + str(dest))
+					print(("Couldn't find route from " + str(origin) + " to " + str(dest)))
 					return None
 			return self.cache[(origin,dest)]
 
@@ -101,5 +101,5 @@ class Route:
 
 @atexit.register
 def goodbye():
-	print "exiting..."
+	print("exiting...")
 	RouteFinder.instance.save_cache()
