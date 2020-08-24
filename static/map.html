@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<title>Simulator</title>
+
+
+<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDG6qHspo59jg8SvfACGCWI8By0c7z7d-k&libraries=geometry,visualization"></script>
+
+<script type="text/javascript" src="{{ url_for('static', filename='lib/jquery.js') }}"></script>
+<script type="text/javascript" src="static/lib/papaparse.min.js"></script>
+<script type="text/javascript" src="static/js/map.js"></script>
+<script type="text/javascript" src="static/js/fontawesome-markers.min.js"></script>
+<script src="static/bower_components/d4/d4.js"></script>
+<!-- <script src="http://d3js.org/d3.v3.min.js"></script> -->
+<script src="static/bower_components/d3/d3.min.js"></script>
+<script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
+<link href="static/bower_components/d4/d4.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+<link href='https://fonts.googleapis.com/css?family=Open+Sans:300, 300italic,400,600,800,800italic,600italic' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+<script src="https://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<link rel="stylesheet" type="text/css" href="static/css/map.css"></link>
+
+</head>
+
+
+
+<body style="font-family: 'Open Sans', sans-serif">
+
+<div id="map-canvas"></div>
+
+
+<!--   File Loading Menu   -->
+  <!-- TODO: upload file to server for sim -->
+  <div id="form" class="style-upper-right" hidden="True">
+    <div id="input">
+      <form id="taxi-data">
+         <div>
+          <label for="trip-file" class="center"> Trip File: </label>
+          <input id="trip-file" name="trip-file" type="file" />
+          <button id="bothBtn" onclick="both()">Bike &amp; Taxi</button>
+          <button id="bikeBtn" onclick="bike()">Bike</button>
+          <button id="driveBtn" onclick="car()">Taxi</button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+
+
+
+
+
+<div class="row">
+  <div class="col-lg-2"  style="color: white;  margin-top: 0px; margin-left: 20px">
+    <h3 style="margin-top:10px; font-style:italic">SimApp</h3>
+    <!--<p style="font-weight:300; font-style:italic; font-size:1em; ">How many Autonomous Hybrid Shared Vehicles do we need in a city? </p> -->
+    <div style="margin-top: 20px; font-size: .9em" id="btn-group">
+          <input type="button" class="btn btn-xs  mode" style="background-color: transparent; border-color:#ff66cc; color: #ff66cc" value="Shenzhen" onclick="setMapShenzhen()">
+          <!-- <input type="button" class="btn btn-xs  mode" style="background-color: transparent; border-color:#ff66cc; color: #ff66cc" value="Newbury" onclick="setMapNewbury()"> -->
+<!--           <input type="button" class="btn btn-xs  mode" style="background-color:#ff66cc; color: white" value="Andorra">
+          <input type="button" class="btn btn-xs  mode" style="background-color:#ff66cc; color: white" value="Taipei">    -->
+         <!--  <input type="button" class="btn btn-info btn-xs  mode" value="Hamburg"> -->
+    </div>
+  </div>
+
+<!--
+  <div class="col-lg-3"  style="color: white; margin-top: 10px">
+
+    <div style="font-weight:600">
+      <i class="fa fa-percent"></i> UTILIZATION
+    </div>
+    <div>
+      <div style="display: inline-block; color: #FFFF00"> <i class="fa fa-child"></i> </div>
+      <div style="display: inline-block; color: #008000 "> <i class="fa fa-cube"></i> </div>
+      <div style="display: inline-block">
+        <div class="chartControl">
+              <div style="display: inline-block; font-size: .8em"><input type="radio" name="mode" value="grouped"> Combined</div>
+              <div style="display: inline-block; font-size: .8em"><input type="radio" name="mode" value="stacked" checked> Split</div>
+        </div>
+      </div>
+
+
+    </div>
+     <div id="utilization_chart"> </div>
+  </div>
+
+  <div class="col-lg-3"  style="color: white; margin-top: 10px; font-weight:600">
+    <i class="fa fa-sellsy"></i> EMISSIONS
+    <div id="emission_chart" style="margin-top: 18px"> </div>
+  </div>
+-->
+  <div class="col-lg-3"  style="color: white; margin-top: 10px; font-weight:600">
+    <div> <i class="fa fa-clock-o"> </i> WAITING TIME </div>
+
+    <div>
+      <div style="display: inline-block; color: #FFFF00"> <i class="fa fa-child"></i> </div>
+      <div style="display: inline-block; color: #008000 "> <i class="fa fa-cube"></i> </div>
+    </div>
+    <div style="display: inline-block">
+        <div id="waitTimePassenger"> </div>
+    </div>
+
+    <div style="display: inline-block">
+        <div id="waitTimeParcel"> </div>
+    </div>
+     </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-3" style="margin-top: 15px; margin-left: 20px; ">
+
+    <p style="color: white; margin-top: 15px">
+      <label style="font-weight:600"> <i class="fa fa-rocket"></i>  PEV Fleet Size:</label>
+      <input type="text" id="fleetSize" style="border:0; width: 70px; background-color: transparent; color:#ff66cc; font-weight:bold">
+    </p>
+    <div id="sliderFleetSize"  style="margin-top: -10px"></div>
+
+
+    <!-- <p style="color: white; margin-top: 15px">
+      <label style="font-weight:600"> <i class="fa fa-arrows-h"></i>  Max Trip Distance:</label>
+      <input type="text" id="maxTripDist" style="border:0; width: 70px; background-color: transparent; color:#ff66cc; font-weight:bold; display: inline-block">
+    </p>
+    <div id="sliderMaxTripDist"  style="margin-top: -10px"></div> -->
+
+    <p style="color: white; margin-top: 15px">
+      <label style="font-weight:600"> <i class="fa fa-cubes"></i>  No. of Vehicles Needing Charge</label>
+      <input type="text" id="chargingFleetSize" style="border:0; width: 70px; background-color: transparent; color:#ff66cc; font-weight:bold; display: inline-block">
+    </p>
+    <div id="sliderChargingFleetSize"  style="margin-top: -10px"></div>
+
+    <p style="color: white; margin-top: 15px">
+      <label style="font-weight:600" > <i class="fa fa-tachometer"></i>  Simulation Speed:</label>
+      <input type="text" id="simSpeed" style="border:0; width: 70px; background-color: transparent; color:#ff66cc; font-weight:bold; display: inline-block">
+    </p>
+    <div id="sliderSimSpeed"  style="margin-top: -10px"></div>
+
+
+    <!-- <p style="color: white; margin-top: 15px">
+      <label style="font-weight:600" > <i class="fa fa-bullseye"></i> O/D Heatmap :</label>
+    </p>
+
+    <div id="heatmap"  style="margin-top: -10px"></div>
+    <input type="button" class="btn  btn-xs" id="heatmapPassBtn" style="margin-top: 0px; width: 98px; background-color: transparent; border-color:white; color: white" value="Passengers" onclick="togglePassHeatmap()">
+
+    <input type="button" class="btn  btn-xs" id="heatmapParcBtn" style="margin-top: 0px; width: 98px; background-color: transparent; border-color:white; color: white" value="Parcels" onclick="toggleParcHeatmap()">
+
+    <br> -->
+
+    <input type="button" class="btn  btn-xs" style="font-weight:600; margin-top: 25px; width: 200px; background-color: transparent; border-color:#ff66cc; color: #ff66cc" value="Run Sim" onclick="fleet_sim()">
+    <br>
+    <input type="button" class="btn  btn-xs" style="font-weight:600; margin-top: 10px; width: 200px; background-color: transparent; border-color:#ff66cc; color: #ff66cc" value="Test Sim" onclick="test_fleet_sim()">
+  </div>
+</div>
+
+
+
+
+<!-- center -->
+
+  <script>
+  // emission_chart
+
+  // console.log(localStorage.getItem("c_taxi_time"));
+  // jQuery(function($) {
+
+function drawEmissionChart(emissions) {
+    var names = ['PEV', 'Taxi','Uber'],
+
+
+        //emissions = [2, 10, 5],
+        chart,
+        width = 225,
+        bar_height = 20,
+        height = bar_height * names.length;
+
+    /* step 1 */
+    chart = d3.select($("#step-1")[0])
+    .append('svg')
+    .attr('class', 'chart')
+    .attr('width', width)
+    .attr('height', height);
+
+    /* step 2 */
+    var x, y;
+
+    x = d3.scale.linear()
+    .domain([0, d3.max(emissions)])
+    .range([0, width]);
+
+    y = d3.scale.ordinal()
+    .domain(emissions)
+    .rangeBands([0, height]);
+
+    chart.selectAll("rect")
+    .data(emissions)
+    .enter().append("rect")
+    .attr("x", 0)
+    .attr("y", y)
+    .attr("width", x)
+    .attr("height", bar_height);
+
+
+    var xAxis = d3.svg.axis()
+    .scale(x)
+    /* step 3 */
+    chart = d3.select($("#step-3")[0])
+    .append('svg')
+    .attr('class', 'chart')
+    .attr('width', width)
+    .attr('height', height);
+
+    chart.selectAll("rect")
+    .data(emissions)
+    .enter().append("rect")
+    .attr("x", 0)
+    .attr("y", y)
+    .attr("width", x)
+    .attr("height", y.rangeBand());
+
+    chart.selectAll("text")
+    .data(emissions)
+    .enter().append("text")
+    .attr("x", x)
+    .attr("y", function(d){ return y(d) + y.rangeBand()/2; } )
+    .attr("dx", -5)
+    .attr("dy", ".36em")
+    .attr("text-anchor", "end")
+    .text(String);
+
+    /* step 4 */
+    var left_width = 30;
+
+    chart = d3.select($("#step-4")[0])
+    .append('svg')
+    .attr('class', 'chart')
+    .attr('width', left_width + width)
+    .attr('height', height);
+
+    chart.selectAll("rect")
+    .data(emissions)
+    .enter().append("rect")
+    .attr("x", left_width)
+    .attr("y", y)
+    .attr("width", x)
+    .attr("height", y.rangeBand());
+
+    chart.selectAll("text.score")
+    .data(emissions)
+    .enter().append("text")
+    .attr("x", function(d) { return x(d) + left_width; })
+    .attr("y", function(d){ return y(d) + y.rangeBand()/2; } )
+    .attr("dx", -5)
+    .attr("dy", ".36em")
+    .attr("text-anchor", "start")
+    .attr('class', 'score')
+    .text(String);
+
+    chart.selectAll("text.name")
+    .data(names)
+    .enter().append("text")
+    .attr("x", left_width / 2)
+    .attr("y", function(d, i){ return y(emissions[i]) + y.rangeBand()/2; } )
+    .attr("dy", ".36em")
+    .attr("text-anchor", "start")
+    .attr('class', 'name')
+    .text(String);
+
+    /* step 5 */
+    var gap = 2;
+  // redefine y for adjusting the gap
+    y = d3.scale.ordinal()
+    .domain(emissions)
+    .rangeBands([0, (bar_height + 2 * gap) * names.length]);
+
+    d3.select("#emissions_data").remove();
+
+    // TODO
+    chart = d3.select($("#emission_chart")[0])
+    .append('svg').attr("id", "emissions_data")
+    .attr('class', 'chart')
+    .attr('width', left_width + width + 40)
+    .attr('height', (bar_height + gap * 2) * names.length + 30)
+    .append("g")
+    .attr("transform", "translate(10, 20)");
+
+    // chart.selectAll("line")
+    // .data(x.ticks(d3.max(emissions)))
+    // .enter().append("line")
+    // .attr("x1", function(d) { return x(d) + left_width; })
+    // .attr("x2", function(d) { return x(d) + left_width; })
+    // .attr("y1", 0)
+    // .attr("y2", (bar_height + gap * 2) * names.length);
+
+    // chart.selectAll(".rule")
+    // .data(x.ticks(d3.max(emissions)))
+    // .enter().append("text")
+    // .attr("class", "rule")
+    // .attr("x", function(d) { return x(d) + left_width; })
+    // .attr("y", 0)
+    // .attr("dy", -6)
+    // .attr("text-anchor", "middle")
+    // .attr("font-size", 10)
+    // .text(String);
+
+    chart.selectAll("rect")
+    .data(emissions)
+    .enter().append("rect")
+    .attr("x", left_width)
+    .attr("y", function(d) { return y(d) + gap; })
+    .attr("width", x)
+    .attr("height", bar_height);
+
+    // TODO see if we can round the labels to a couple decimal places
+    chart.selectAll("text.score")
+    .data(emissions)
+    .enter().append("text")
+    .attr("x", function(d) { return x(d) + left_width; })
+    .attr("y", function(d, i){ return y(d) + y.rangeBand()/2; } )
+    .attr("dx", -5)
+    .attr("dy", ".36em")
+    .attr("text-anchor", "end")
+    .attr('class', 'score')
+    //.text(String);
+    .text(d3.format("2.2f"))
+    .attr("transform", "translate(30, 0)");
+
+    chart.selectAll("text.name")
+    .data(names)
+    .enter().append("text")
+    .attr("x", left_width / 2)
+    .attr("y", function(d, i){ return y(emissions[i]) + y.rangeBand()/2; } )
+    .attr("dy", ".36em")
+    .attr("text-anchor", "middle")
+    .attr('class', 'name')
+    .text(String);
+};
+
+      // console.log(localStorage.getItem("emissions_coeffs"));
+     // drawEmissionChart(emissions_coeffs);
+ </script>
+
+
+<!-- Utilization Chart -->
+
+<script>
+    var n = 2, // number of layers
+        m = 24, // number of samples per layer
+
+        parcel_color = "#008000",
+        passenger_color = "#FFFF00",
+
+        stack = d3.layout.stack(),
+        layers = stack(d3.range(n).map(function() { return bumpLayer(m, .1); }));
+
+function drawUtil(layers) {
+
+    var yGroupMax = d3.max(layers, function(layer) { return d3.max(layer, function(d) { return d.y; }); }),
+        yStackMax = d3.max(layers, function(layer) { return d3.max(layer, function(d) { return d.y0 + d.y; }); });
+
+
+    var margin = {top: 30, right: 10, bottom: 20, left: 10},
+    width = 280;
+    // height = 125 - margin.top - margin.bottom;
+    height = 65;
+
+    var x = d3.scale.ordinal()
+    .domain(d3.range(m))
+    .rangeRoundBands([0, width], .08);
+
+    var y = d3.scale.linear()
+    .domain([0, yStackMax])
+    .range([height, 0]);
+
+    var color = d3.scale.linear()
+    .domain([0, n - 1])
+    .range([parcel_color, passenger_color]);
+
+    var xAxis = d3.svg.axis()
+    .scale(x)
+    .tickSize(0)
+    .tickPadding(6)
+    .orient("bottom");
+
+    d3.select("#util_data").remove();
+
+    var svg = d3.select($("#utilization_chart")[0]).append("svg")
+    .attr("id", "util_data")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    var layer = svg.selectAll(".layer")
+    .data(layers)
+    .enter().append("g")
+    .attr("class", "layer")
+    .style("fill", function(d, i) { return color(i); });
+
+    var rect = layer.selectAll("rect")
+    .data(function(d) { return d; })
+    .enter().append("rect")
+    .attr("x", function(d) { return x(d.x); })
+    .attr("y", height)
+    .attr("width", x.rangeBand())
+    .attr("height", 0);
+
+    rect.transition()
+    .delay(function(d, i) { return i * 10; })
+    .attr("y", function(d) { return y(d.y0 + d.y); })
+    .attr("height", function(d) { return y(d.y0) - y(d.y0 + d.y); });
+
+    svg.append("g")
+    .attr("class", "x axis")
+    .attr("transform", "translate(0," + height + ")")
+    .attr("fill", "#ffffff")
+    .attr("font-size", "40px")
+    .call(xAxis);
+
+    d3.selectAll("input").on("change", change);
+
+    var timeout = setTimeout(function() {
+      d3.select("input[value=\"grouped\"]").property("checked", true).each(change);
+    }, 2000);
+
+    function change() {
+      clearTimeout(timeout);
+      if (this.value === "stacked") transitionGrouped();
+      else transitionStacked();
+    }
+
+    function transitionGrouped() {
+      y.domain([0, yGroupMax]);
+
+      rect.transition()
+      .duration(500)
+      .delay(function(d, i) { return i * 10; })
+      .attr("x", function(d, i, j) { return x(d.x) + x.rangeBand() / n * j; })
+      .attr("width", x.rangeBand() / n)
+      .transition()
+      .attr("y", function(d) { return y(d.y); })
+      .attr("height", function(d) { return height - y(d.y); });
+    }
+
+    function transitionStacked() {
+      y.domain([0, yStackMax]);
+
+      rect.transition()
+      .duration(500)
+      .delay(function(d, i) { return i * 10; })
+      .attr("y", function(d) { return y(d.y0 + d.y); })
+      .attr("height", function(d) { return y(d.y0) - y(d.y0 + d.y); })
+      .transition()
+      .attr("x", function(d) { return x(d.x); })
+      .attr("width", x.rangeBand());
+    }
+
+}
+
+
+// Inspired by Lee Byron's test data generator.
+function bumpLayer(n, o) {
+
+  function bump(a) {
+    var x = 1 / (.1 + Math.random()),
+    y = 2 * Math.random() - .5,
+    z = 10 / (.1 + Math.random());
+    for (var i = 0; i < n; i++) {
+      var w = (i / n - y) * z;
+      a[i] += x * Math.exp(-w * w);
+    }
+  }
+
+  var a = [], i;
+  for (i = 0; i < n; ++i) a[i] = o + o * Math.random();
+    for (i = 0; i < 5; ++i) bump(a);
+      return a.map(function(d, i) { return {x: i, y: Math.max(0, d)}; });
+  }
+
+  </script>
+
+
+
+
+
+<!-- WAITING TIME -->
+
+<!-- right 1-->
+
+  <script type="text/javascript">
+
+  var w = 120;
+  var h = 80;
+
+  var parcel_color = "#008000";
+  var passenger_color = "#FFCC00";
+
+  var dataset = [
+    { key: 0, value: 0 },
+    { key: 5, value: 0 },
+    { key: 10, value: 0 },
+    { key: 15, value: 0 },
+    { key: 20,value: 0 },
+    { key: 25, value: 0 },
+    { key: 30, value: 0 },
+    { key: 35, value: 0 }];
+
+  var key = function(d) {
+    return d.key;
+  };
+
+    var xScale = d3.scale.ordinal()
+    .domain(d3.range(0, 40, 5))
+    .rangeRoundBands([0, w], 0.05);
+
+    var yScale = d3.scale.linear()
+    .domain([0, d3.max(dataset, function(d) {return d.value;})])
+    .range([0, h]);
+
+  var svg = d3.select($("#waitTimePassenger")[0])
+    .append("svg")
+    .attr("width", w)
+    .attr("height", h+40);
+
+  svg.selectAll("rect")
+    .data(dataset, key)
+    .enter()
+    .append("rect")
+    .attr("x", function(d, i) {
+      return xScale(i);
+    })
+    .attr("y", function(d) {
+      return h - yScale(d.value);
+    })
+    .attr("width", xScale.rangeBand())
+    .attr("height", function(d) {
+      return yScale(d.value);
+    })
+    .attr("fill", "#FFFF00")
+
+          //Create labels
+      svg.selectAll("text")
+      .data(dataset, key)
+      .enter()
+      .append("text")
+      .text(function(d) {
+        if (d.value == 0) return "";
+        return d.value;
+      })
+      .attr("text-anchor", "middle")
+      .attr("x", function(d, i) {
+        return xScale(5*i) + xScale.rangeBand() / 2;
+      })
+      .attr("y", function(d) {
+        return h - yScale(d.value) + 14;
+      })
+      .attr("font-family", "sans-serif")
+      .attr("font-size", "11px")
+      .attr("fill", "white")
+      .attr("transform", "translate(0,-15)");
+
+    var xAxis = d3.svg.axis()
+    .scale(xScale)
+    .tickSize(0)
+    .tickPadding(6)
+    .orient("bottom");
+
+    svg.append("g")
+    .call(xAxis)
+    .attr("transform", "translate(0, 100)")
+    .attr("class", "x axis")
+    .attr("fill", "white");
+
+  function drawPersonWaitTime(dataset) {
+
+    yScale = d3.scale.linear()
+    .domain([0, d3.max(dataset, function(d) {return d.value;})])
+    .range([0, h]);
+
+    //Create bars
+    svg.selectAll("rect")
+    .data(dataset, key)
+    .attr("x", function(d, i) {
+      return xScale(5*i);
+    })
+    .attr("y", function(d) {
+      return h+20 - yScale(d.value);
+    })
+    .attr("width", xScale.rangeBand())
+    .attr("height", function(d) {
+      return yScale(d.value);
+    })
+    .attr("fill", "#FFFF00")
+
+      //Create labels
+      svg.selectAll("text")
+      .data(dataset, key)
+      .text(function(d) {
+        if (d.value == 0) return "";
+        return d.value;
+      })
+      .attr("text-anchor", "middle")
+      .attr("x", function(d, i) {
+        return xScale(5*i) + xScale.rangeBand() / 2;
+      })
+      .attr("y", function(d) {
+        return h+20 - yScale(d.value) + 14;
+      })
+      .attr("font-family", "sans-serif")
+      .attr("font-size", "11px")
+      .attr("fill", "white")
+      .attr("transform", "translate(0,-15)");
+}
+
+
+
+
+</script>
+
+<!-- right 2-->
+
+ <script type="text/javascript">
+
+  var w = 120;
+  var h = 80;
+
+  //Create SVG element
+    var svg2 = d3.select($("#waitTimeParcel")[0])
+    .append("svg")
+    .attr("width", w)
+    .attr("height", h+40);
+
+    var dataset = [
+    { key: 0, value: 0 },
+    { key: 5, value: 0 },
+    { key: 10, value: 0 },
+    { key: 15, value: 0 },
+    { key: 20,value: 0 },
+    { key: 25, value: 0 },
+    { key: 30, value: 0 },
+    { key: 35, value: 0 }];
+
+  var key = function(d) {
+    return d.key;
+  };
+
+    var xScale2 = d3.scale.ordinal()
+    .domain(d3.range(0, 40, 5))
+    .rangeRoundBands([0, w], 0.05);
+
+    // using same yScale as person chart
+    // TODO: remove assumption that person chart always has higher frequencies
+
+  svg2.selectAll("rect")
+    .data(dataset, key)
+    .enter()
+    .append("rect")
+    .attr("x", function(d, i) {
+      return xScale2(i);
+    })
+    .attr("y", function(d) {
+      return h - yScale(d.value);
+    })
+    .attr("width", xScale2.rangeBand())
+    .attr("height", function(d) {
+      return yScale(d.value);
+    })
+    .attr("fill", "#FFCC00")
+
+        //Create labels
+  svg2.selectAll("text")
+    .data(dataset, key)
+    .enter()
+    .append("text")
+    .text(function(d) {
+      if (d.value == 0) return "";
+      return d.value;
+    })
+    .attr("text-anchor", "middle")
+    .attr("x", function(d, i) {
+      return xScale2(5*i) + xScale2.rangeBand() / 2;
+    })
+    .attr("y", function(d) {
+      return h - yScale(d.value) + 14;
+    })
+    .attr("font-family", "sans-serif")
+    .attr("font-size", "11px")
+    .attr("fill", "white")
+    .attr("transform", "translate(0,-15)");
+
+  var xAxis2 = d3.svg.axis()
+    .scale(xScale2)
+    .tickSize(0)
+    .tickPadding(6)
+    .orient("bottom");
+
+  svg2.append("g")
+    .call(xAxis2)
+    .attr("transform", "translate(0, 100)")
+    .attr("class", "x axis")
+    .attr("fill", "white");
+
+  function drawPackageWaitTime(dataset) {
+
+    xScale2 = d3.scale.ordinal()
+    .domain(d3.range(dataset.length))
+    .rangeRoundBands([0, w], 0.05);
+
+    xAxis2 = d3.svg.axis()
+    .scale(xScale2)
+
+    //Create bars
+    svg2.selectAll("rect")
+    .data(dataset, key)
+    .attr("x", function(d, i) {
+      return xScale2(i);
+    })
+    .attr("y", function(d) {
+      return h + 20 - yScale(d.value);
+    })
+    .attr("width", xScale2.rangeBand())
+    .attr("height", function(d) {
+      return yScale(d.value);
+    })
+    .attr("fill", "#FFCC00")
+
+      //Create labels
+      svg2.selectAll("text")
+      .data(dataset, key)
+      .text(function(d) {
+        if (d.value == 0) return "";
+        return d.value;
+      })
+      .attr("text-anchor", "middle")
+      .attr("x", function(d, i) {
+        return xScale2(i) + xScale2.rangeBand() / 2;
+      })
+      .attr("y", function(d) {
+        return h + 20 - yScale(d.value) + 14;
+      })
+      .attr("font-family", "sans-serif")
+      .attr("font-size", "11px")
+      .attr("fill", "white")
+      .attr("transform", "translate(0,-15)");
+
+}
+
+
+
+</script>
+
+
+</body>
+</html>
