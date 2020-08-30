@@ -156,15 +156,7 @@ $(function() {
     $( "#simSpeed" ).val(  $( "#sliderSimSpeed" ).slider( "value" ) + "x"  );
 });
 
-// function setMapNewbury() {
-//     map.center = new Maps.LatLng(42.3519319, -71.0827417);
-//     map.setZoom(15);
-// }
-//
-// function setMapBoston() {
-//     map.center = new Maps.LatLng(42.359456, -71.076336);
-//     map.setZoom(14)
-// }
+
 function setMapNewbury() {
     map.center = new Maps.LatLng(22.7004312,113.9264277);
     map.setZoom(11);
@@ -262,7 +254,7 @@ function fleet_sim() {
 					success: function(data) {
             $.getJSON(data['file_path'], function(data_) {
               console.log("sim2_data");
-              console.log(data_);
+              //console.log(data_);
               sim_data = data_;
               animateCars();
             });
@@ -281,7 +273,7 @@ function test_fleet_sim() {
     console.log(sim_params);
     $.getJSON("static/json_files/test_sim.json", function(data) {
       console.log("sim2_data");
-      console.log(data);
+      //console.log(data);
       sim_data = data;
       animateCars();
     });
@@ -562,23 +554,6 @@ function animateCars() {
 
                 }
 
-                // else {
-                //     console.log('Not human');
-                //     console.log(sim_data.tstep);
-                //     console.log(temp_time_ordered);
-                //     console.log(temp_trip_time);
-                //     marker2 = new Maps.Marker({
-                //         position: dest,
-                //         map: map,
-                //         icon: charging_image,
-                //         clickable: false,
-                //     });
-                //     marker2.info = {};
-                //
-                // }
-
-
-
                 sim_data.trips[sim_data.curTask]['marker'] = marker;
                 sim_data.trips[sim_data.curTask]['marker2'] = marker2;
                 sim_data.trips[sim_data.curTask]['marker3'] = marker3;
@@ -675,25 +650,7 @@ function animateCars() {
 
                     }
 
-                    // else if ((sim_data.trips[tripIdx].time_ordered + sim_data.trips[tripIdx].trip_time + sim_data.trips[tripIdx].charging_waittime) <= sim_data.tstep){
-                    //     var dest_2 = {lat: sim_data.trips[tripIdx].dest_loc[0], lng: sim_data.trips[tripIdx].dest_loc[1]};
-                    //     // console.log('Not human update');
-                    //     // console.log(sim_data.tstep);
-                    //     // console.log(sim_data.trips[tripIdx].time_ordered);
-                    //     // console.log(sim_data.trips[tripIdx].trip_time);
-                    //     // console.log(sim_data.trips[tripIdx].charging_waittime);
-                    //     // console.log(dest_2);
-                    //     sim_data.trips[tripIdx].marker3.setMap(null);
-                    //     sim_data.trips[tripIdx].marker3 = null;
-                    //     sim_data.trips[tripIdx].marker2 = new Maps.Marker({
-                    //         position: dest_2,
-                    //         map: map,
-                    //         icon: charging_image,
-                    //         clickable: false,
-                    //     });
-                    //     sim_data.trips[tripIdx].marker2.info = {};
-                    //
-                    // }
+
 
 
                 }
@@ -912,7 +869,7 @@ function animateLines() {
         // add the circular symbol to the line
         line.icons.push({
             icon: lineSymbol,
-            offset: "0%", // at the starting position
+            offset: "20%", // at the starting position
         });
 
 

@@ -67,32 +67,7 @@
     </div>
   </div>
 
-<!--
-  <div class="col-lg-3"  style="color: white; margin-top: 10px">
 
-    <div style="font-weight:600">
-      <i class="fa fa-percent"></i> UTILIZATION
-    </div>
-    <div>
-      <div style="display: inline-block; color: #FFFF00"> <i class="fa fa-child"></i> </div>
-      <div style="display: inline-block; color: #008000 "> <i class="fa fa-cube"></i> </div>
-      <div style="display: inline-block">
-        <div class="chartControl">
-              <div style="display: inline-block; font-size: .8em"><input type="radio" name="mode" value="grouped"> Combined</div>
-              <div style="display: inline-block; font-size: .8em"><input type="radio" name="mode" value="stacked" checked> Split</div>
-        </div>
-      </div>
-
-
-    </div>
-     <div id="utilization_chart"> </div>
-  </div>
-
-  <div class="col-lg-3"  style="color: white; margin-top: 10px; font-weight:600">
-    <i class="fa fa-sellsy"></i> EMISSIONS
-    <div id="emission_chart" style="margin-top: 18px"> </div>
-  </div>
--->
   <div class="col-lg-3"  style="color: white; margin-top: 10px; font-weight:600">
     <div> <i class="fa fa-clock-o"> </i> WAITING TIME </div>
 
@@ -288,24 +263,7 @@ function drawEmissionChart(emissions) {
     .append("g")
     .attr("transform", "translate(10, 20)");
 
-    // chart.selectAll("line")
-    // .data(x.ticks(d3.max(emissions)))
-    // .enter().append("line")
-    // .attr("x1", function(d) { return x(d) + left_width; })
-    // .attr("x2", function(d) { return x(d) + left_width; })
-    // .attr("y1", 0)
-    // .attr("y2", (bar_height + gap * 2) * names.length);
 
-    // chart.selectAll(".rule")
-    // .data(x.ticks(d3.max(emissions)))
-    // .enter().append("text")
-    // .attr("class", "rule")
-    // .attr("x", function(d) { return x(d) + left_width; })
-    // .attr("y", 0)
-    // .attr("dy", -6)
-    // .attr("text-anchor", "middle")
-    // .attr("font-size", 10)
-    // .text(String);
 
     chart.selectAll("rect")
     .data(emissions)
