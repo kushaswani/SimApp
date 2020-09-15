@@ -1,0 +1,1 @@
+run the app through a PHP server (php -S localhost8000) and then go to localhost8000map.htm

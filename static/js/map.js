@@ -37,7 +37,7 @@ var mode = {};
 var emissions = [0, 0, 0];
 var tot_distances = [0, 0, 0];
 var emissions_coeffs = [2, 10, 5];
-var person_wait_times = [
+var person_wait_times1 = [
     { key: 0, value: 0 },
     { key: 5, value: 0 },
     { key: 10, value: 0 },
@@ -46,7 +46,25 @@ var person_wait_times = [
     { key: 25, value: 0 },
     { key: 30, value: 0 },
     { key: 35, value: 0 }];
-var package_wait_times = [
+var package_wait_times1 = [
+    { key: 0, value: 0 },
+    { key: 5, value: 0 },
+    { key: 10, value: 0 },
+    { key: 15, value: 0 },
+    { key: 20, value: 0 },
+    { key: 25, value: 0 },
+    { key: 30, value: 0 },
+    { key: 35, value: 0 }];
+var person_wait_times2 = [
+    { key: 0, value: 0 },
+    { key: 5, value: 0 },
+    { key: 10, value: 0 },
+    { key: 15, value: 0 },
+    { key: 20, value: 0 },
+    { key: 25, value: 0 },
+    { key: 30, value: 0 },
+    { key: 35, value: 0 }];
+var package_wait_times2 = [
     { key: 0, value: 0 },
     { key: 5, value: 0 },
     { key: 10, value: 0 },
@@ -256,7 +274,9 @@ function fleet_sim() {
               console.log("sim2_data");
               //console.log(data_);
               sim_data = data_;
-              animateCars();
+              animateCars(1);
+              // console.log("initial finished");
+              // animateCars(2);
             });
 					}
 				});
@@ -275,7 +295,9 @@ function test_fleet_sim() {
       console.log("sim2_data");
       //console.log(data);
       sim_data = data;
-      animateCars();
+      //animateCars(1);
+      //console.log("initial finished");
+      animateCars(2);
     });
 
 }
@@ -445,23 +467,37 @@ function zipUtilization() {
     }
     return [util_human, util_parc];
 }
-
-function calculateTripWaitTime(data) {
+//the initial waiting time
+function calculateTripWaitTime1(data) {
     // TODO: don't count actual trips as wait time
     // rounding to nearest multiple of 5
+    // THE PACKAGE IS USED TO DRAW CHARING TIME
     var wait_time = Math.round(data.route.duration/60/5);
     if (wait_time > 7) wait_time = 7;
     if (data.is_human) {
-        person_wait_times[wait_time].value += 1;
+        person_wait_times1[wait_time].value += 1;
     } else {
-        package_wait_times[wait_time].value += 1;
+        package_wait_times1[wait_time].value += 1;
     }
-    drawPersonWaitTime(person_wait_times);
-    drawPackageWaitTime(package_wait_times);
+    drawPersonWaitTime1(person_wait_times1);
+    drawPackageWaitTime1(package_wait_times1);
 }
-
-
-function animateCars() {
+//the optimized waiting time
+function calculateTripWaitTime2(data) {
+    // TODO: don't count actual trips as wait time
+    // rounding to nearest multiple of 5
+    // THE PACKAGE IS USED TO DRAW CHARING TIME
+    var wait_time = Math.round(data.route.duration/60/5);
+    if (wait_time > 7) wait_time = 7;
+    if (data.is_human) {
+        person_wait_times2[wait_time].value += 1;
+    } else {
+        package_wait_times2[wait_time].value += 1;
+    }
+    drawPersonWaitTime2(person_wait_times2);
+    drawPackageWaitTime2(package_wait_times2);
+}
+function animateCars(index) {
     // like animateLines but for cars with a schedule of many things to do
 
     // first clear the intervals
@@ -514,14 +550,17 @@ function animateCars() {
         if (sim_data.curTask < sim_data.trips.length) {
             while (sim_data.tstep >= sim_data.trips[sim_data.curTask].time_ordered) {
 
-
-                // draw the caller
-                // xxx
-                // console.log(sim_data.trips[sim_data.curTask])
-                // drawUtilization();
                 calculateTripEmission(sim_data.trips[sim_data.curTask], true);
                 //drawEmissionChart(emissions);
-                calculateTripWaitTime(sim_data.trips[sim_data.curTask]);
+                console.log("index2");
+                if(index == 1){
+                    calculateTripWaitTime1(sim_data.trips[sim_data.curTask]);
+                }
+                else{
+                    calculateTripWaitTime2(sim_data.trips[sim_data.curTask]);
+                    console.log("index2");
+                }
+
                 var origin = {lat: sim_data.trips[sim_data.curTask].start_loc[0], lng: sim_data.trips[sim_data.curTask].start_loc[1]};
                 var dest = {lat: sim_data.trips[sim_data.curTask].dest_loc[0], lng: sim_data.trips[sim_data.curTask].dest_loc[1]};
                 var marker;
@@ -595,11 +634,11 @@ function animateCars() {
                           sim_data.shown.splice(i, 1);
                           i--; // I hate doing this
 
-                          console.log('deleted');
-                          console.log(sim_data.trips[tripIdx].marker2);
+                          //console.log('deleted');
+                          //console.log(sim_data.trips[tripIdx].marker2);
                         } catch(err){
-                          console.log('already deleted');
-                          console.log(sim_data.trips[tripIdx].marker2);
+                          //console.log('already deleted');
+                          //console.log(sim_data.trips[tripIdx].marker2);
                         }
                     }
 
@@ -613,13 +652,13 @@ function animateCars() {
                             // i--; // I hate doing this
                         }
                         catch (err){
-                          console.log('already deleted');
-                          console.log(sim_data.trips[tripIdx].marker3);
+                          //console.log('already deleted');
+                          //console.log(sim_data.trips[tripIdx].marker3);
                         }
 
 
-                        console.log('deleted');
-                        console.log(sim_data.trips[tripIdx].marker3);
+                        //console.log('deleted');
+                        //console.log(sim_data.trips[tripIdx].marker3);
 
 
                         var dest2 = {lat: sim_data.trips[tripIdx].dest_loc[0], lng: sim_data.trips[tripIdx].dest_loc[1]};
