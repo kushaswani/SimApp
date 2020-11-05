@@ -69,22 +69,39 @@
 
 
   <div class="col-lg-3"  style="color: white; margin-top: 10px; font-weight:600">
-    <div> <i class="fa fa-clock-o"> </i> WAITING TIME </div>
+
+    <div> <i class="fa fa-clock-o"> </i> TIME initial</div>
 
     <div>
       <div style="display: inline-block; color: #FFFF00"> <i class="fa fa-child"></i> </div>
       <div style="display: inline-block; color: #008000 "> <i class="fa fa-cube"></i> </div>
     </div>
     <div style="display: inline-block">
-        <div id="waitTimePassenger"> </div>
+        <div id="waitTimePassenger1"> </div>
     </div>
 
     <div style="display: inline-block">
-        <div id="waitTimeParcel"> </div>
+        <div id="waitTimeParcel1"> </div>
     </div>
      </div>
+  <div class="col-lg-3"  style="color: white; margin-top: 10px; font-weight:600">
+    <div> <i class="fa fa-clock-o"> </i> TIME optimized</div>
+
+    <div>
+      <div style="display: inline-block; color: #FFFF00"> <i class="fa fa-child"></i> </div>
+      <div style="display: inline-block; color: #008000 "> <i class="fa fa-cube"></i> </div>
+    </div>
+    <div style="display: inline-block">
+        <div id="waitTimePassenger2"> </div>
+    </div>
+      <div style="display: inline-block">
+        <div id="waitTimeParcel2"> </div>
+    </div>
   </div>
+
 </div>
+
+
 
 <div class="row">
   <div class="col-lg-3" style="margin-top: 15px; margin-left: 20px; ">
@@ -479,7 +496,7 @@ function bumpLayer(n, o) {
     .domain([0, d3.max(dataset, function(d) {return d.value;})])
     .range([0, h]);
 
-  var svg = d3.select($("#waitTimePassenger")[0])
+  var svg = d3.select($("#waitTimePassenger1")[0])
     .append("svg")
     .attr("width", w)
     .attr("height", h+40);
@@ -533,7 +550,7 @@ function bumpLayer(n, o) {
     .attr("class", "x axis")
     .attr("fill", "white");
 
-  function drawPersonWaitTime(dataset) {
+  function drawPersonWaitTime1(dataset) {
 
     yScale = d3.scale.linear()
     .domain([0, d3.max(dataset, function(d) {return d.value;})])
@@ -587,7 +604,7 @@ function bumpLayer(n, o) {
   var h = 80;
 
   //Create SVG element
-    var svg2 = d3.select($("#waitTimeParcel")[0])
+    var svg2 = d3.select($("#waitTimeParcel1")[0])
     .append("svg")
     .attr("width", w)
     .attr("height", h+40);
@@ -662,7 +679,7 @@ function bumpLayer(n, o) {
     .attr("class", "x axis")
     .attr("fill", "white");
 
-  function drawPackageWaitTime(dataset) {
+  function drawPackageWaitTime1(dataset) {
 
     xScale2 = d3.scale.ordinal()
     .domain(d3.range(dataset.length))
@@ -711,6 +728,256 @@ function bumpLayer(n, o) {
 
 </script>
 
+<!-- WAITING TIME -->
+ <script type="text/javascript">
+  var w = 120;
+  var h = 80;
 
+  var parcel_color = "#008000";
+  var passenger_color = "#FFCC00";
+
+  var dataset = [
+    { key: 0, value: 0 },
+    { key: 5, value: 0 },
+    { key: 10, value: 0 },
+    { key: 15, value: 0 },
+    { key: 20,value: 0 },
+    { key: 25, value: 0 },
+    { key: 30, value: 0 },
+    { key: 35, value: 0 }];
+
+  var key = function(d) {
+    return d.key;
+  };
+
+    var xScale3 = d3.scale.ordinal()
+    .domain(d3.range(0, 40, 5))
+    .rangeRoundBands([0, w], 0.05);
+
+    // var yScale = d3.scale.linear()
+    // .domain([0, d3.max(dataset, function(d) {return d.value;})])
+    // .range([0, h]);
+
+  var svg3 = d3.select($("#waitTimePassenger2")[0])
+    .append("svg")
+    .attr("width", w)
+    .attr("height", h+40);
+
+  svg3.selectAll("rect")
+    .data(dataset, key)
+    .enter()
+    .append("rect")
+    .attr("x", function(d, i) {
+      return xScale3(i);
+    })
+    .attr("y", function(d) {
+      return h - yScale(d.value);
+    })
+    .attr("width", xScale3.rangeBand())
+    .attr("height", function(d) {
+      return yScale(d.value);
+    })
+    .attr("fill", "#FFFF00")
+
+          //Create labels
+      svg3.selectAll("text")
+      .data(dataset, key)
+      .enter()
+      .append("text")
+      .text(function(d) {
+        if (d.value == 0) return "";
+        return d.value;
+      })
+      .attr("text-anchor", "middle")
+      .attr("x", function(d, i) {
+        return xScale3(5*i) + xScale3.rangeBand() / 2;
+      })
+      .attr("y", function(d) {
+        return h - yScale(d.value) + 14;
+      })
+      .attr("font-family", "sans-serif")
+      .attr("font-size", "11px")
+      .attr("fill", "white")
+      .attr("transform", "translate(0,-15)");
+
+    var xAxis3 = d3.svg.axis()
+    .scale(xScale3)
+    .tickSize(0)
+    .tickPadding(6)
+    .orient("bottom");
+
+    svg3.append("g")
+    .call(xAxis3)
+    .attr("transform", "translate(0, 100)")
+    .attr("class", "x axis")
+    .attr("fill", "white");
+
+
+
+  function drawPersonWaitTime2(dataset) {
+
+    yScale = d3.scale.linear()
+    .domain([0, d3.max(dataset, function(d) {return d.value;})])
+    .range([0, h]);
+
+    //Create bars
+    svg3.selectAll("rect")
+    .data(dataset, key)
+    .attr("x", function(d, i) {
+      return xScale3(5*i);
+    })
+    .attr("y", function(d) {
+      return h+20 - yScale(d.value);
+    })
+    .attr("width", xScale3.rangeBand())
+    .attr("height", function(d) {
+      return yScale(d.value);
+    })
+    .attr("fill", "#FFFF00")
+
+      //Create labels
+      svg3.selectAll("text")
+      .data(dataset, key)
+      .text(function(d) {
+        if (d.value == 0) return "";
+        return d.value;
+      })
+      .attr("text-anchor", "middle")
+      .attr("x", function(d, i) {
+        return xScale3(5*i) + xScale3.rangeBand() / 2;
+      })
+      .attr("y", function(d) {
+        return h+20 - yScale(d.value) + 14;
+      })
+      .attr("font-family", "sans-serif")
+      .attr("font-size", "11px")
+      .attr("fill", "white")
+      .attr("transform", "translate(0,-15)");
+}
+ </script>
+ <script type="text/javascript">
+     var w = 120;
+     var h = 80;
+
+  //Create SVG element
+    var svg4 = d3.select($("#waitTimeParcel2")[0])
+    .append("svg")
+    .attr("width", w)
+    .attr("height", h+40);
+
+    var dataset = [
+    { key: 0, value: 0 },
+    { key: 5, value: 0 },
+    { key: 10, value: 0 },
+    { key: 15, value: 0 },
+    { key: 20,value: 0 },
+    { key: 25, value: 0 },
+    { key: 30, value: 0 },
+    { key: 35, value: 0 }];
+
+  var key = function(d) {
+    return d.key;
+  };
+
+    var xScale4 = d3.scale.ordinal()
+    .domain(d3.range(0, 40, 5))
+    .rangeRoundBands([0, w], 0.05);
+
+    // using same yScale as person chart
+    // TODO: remove assumption that person chart always has higher frequencies
+
+  svg4.selectAll("rect")
+    .data(dataset, key)
+    .enter()
+    .append("rect")
+    .attr("x", function(d, i) {
+      return xScale4(i);
+    })
+    .attr("y", function(d) {
+      return h - yScale(d.value);
+    })
+    .attr("width", xScale2.rangeBand())
+    .attr("height", function(d) {
+      return yScale(d.value);
+    })
+    .attr("fill", "#FFCC00")
+
+        //Create labels
+  svg4.selectAll("text")
+    .data(dataset, key)
+    .enter()
+    .append("text")
+    .text(function(d) {
+      if (d.value == 0) return "";
+      return d.value;
+    })
+    .attr("text-anchor", "middle")
+    .attr("x", function(d, i) {
+      return xScale4(5*i) + xScale4.rangeBand() / 2;
+    })
+    .attr("y", function(d) {
+      return h - yScale(d.value) + 14;
+    })
+    .attr("font-family", "sans-serif")
+    .attr("font-size", "11px")
+    .attr("fill", "white")
+    .attr("transform", "translate(0,-15)");
+
+  var xAxis4 = d3.svg.axis()
+    .scale(xScale4)
+    .tickSize(0)
+    .tickPadding(6)
+    .orient("bottom");
+
+  svg4.append("g")
+    .call(xAxis4)
+    .attr("transform", "translate(0, 100)")
+    .attr("class", "x axis")
+    .attr("fill", "white");
+  function drawPackageWaitTime2(dataset) {
+
+    xScale4 = d3.scale.ordinal()
+    .domain(d3.range(dataset.length))
+    .rangeRoundBands([0, w], 0.05);
+
+    xAxis4 = d3.svg.axis()
+    .scale(xScale4)
+
+    //Create bars
+    svg4.selectAll("rect")
+    .data(dataset, key)
+    .attr("x", function(d, i) {
+      return xScale4(i);
+    })
+    .attr("y", function(d) {
+      return h + 20 - yScale(d.value);
+    })
+    .attr("width", xScale4.rangeBand())
+    .attr("height", function(d) {
+      return yScale(d.value);
+    })
+    .attr("fill", "#FFCC00")
+
+      //Create labels
+      svg4.selectAll("text")
+      .data(dataset, key)
+      .text(function(d) {
+        if (d.value == 0) return "";
+        return d.value;
+      })
+      .attr("text-anchor", "middle")
+      .attr("x", function(d, i) {
+        return xScale4(i) + xScale4.rangeBand() / 2;
+      })
+      .attr("y", function(d) {
+        return h + 20 - yScale(d.value) + 14;
+      })
+      .attr("font-family", "sans-serif")
+      .attr("font-size", "11px")
+      .attr("fill", "white")
+      .attr("transform", "translate(0,-15)");
+
+}
+ </script>
 </body>
 </html>

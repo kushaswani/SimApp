@@ -17,7 +17,7 @@ import pprint
 
 def save_run_sim_json(fleetSize, chargingFleetSize):
 	routes.RouteFinder("server/google_api_key", ".routes_cache")
-	print("test",flush = True)
+	#print("test",flush = True)
 	# env = pev_sim.Sim_env(3, None, (42.3492699,-71.0900377))
 	env = pev_sim.Sim_env(fleetSize - chargingFleetSize, None, (22.534901,114.007896))
 
