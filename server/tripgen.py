@@ -13,11 +13,11 @@ except:
 
 import csv
 
-def readNewburyTestData(test):
+def readNewburyTestData(test,model_no):
 	if test:
 		path = "../dataprocessing/test_sim.csv"
 	else:
-		path = "dataprocessing/run_sim.csv"
+		path = "dataprocessing/run_sim{}.csv".format(model_no)
 	## TODO pop out into method
 	trips = []
 	print(path)

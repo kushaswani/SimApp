@@ -7,9 +7,9 @@ from dateutil import tz
 import random
 from ast import literal_eval
 
-def foo(fleetSize,chargingFleetSize):
-    chargingData = pd.read_csv('dataprocessing/chargingData.csv')
-    tripsData = pd.read_csv('dataprocessing/tripsData.csv')
+def foo(fleetSize,chargingFleetSize,model_no):
+    chargingData = pd.read_csv('dataprocessing/chargingData{}.csv'.format(model_no))
+    tripsData = pd.read_csv('dataprocessing/tripsData{}.csv'.format(model_no))
 
     tripsData["pickupTime"] = pd.to_datetime(tripsData["pickupTime"])
     tripsData["dropoffTime"] = pd.to_datetime(tripsData["dropoffTime"])
@@ -65,7 +65,7 @@ def foo(fleetSize,chargingFleetSize):
         filtered_street.loc[temp_len + i] = temp_list
 
     # filtered_street.to_csv('dataprocessing/run_sim.csv',index=False)
-    filtered_street.to_csv('dataprocessing/run_sim.csv',index=False)
+    filtered_street.to_csv('dataprocessing/run_sim{}.csv'.format(model_no),index=False)
 
 
 

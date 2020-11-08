@@ -119,6 +119,7 @@ var waittime_image = "static/icons/waittime.svg";
 var charging_image = "static/icons/ezgif.com-resize.gif";
 // window.localStorage.setItem(id, json string)
 
+var model2_path
 
 $(function() {
     $( "#sliderFleetSize" ).slider({
@@ -270,16 +271,19 @@ function fleet_sim() {
           contentType: "application/json",
           dataType: 'json',
 					success: function(data) {
-            $.getJSON(data['file_path'], function(data_) {
-              console.log("sim2_data");
-              //console.log(data_);
+            model2_path = data['file_path2'];
+            console.log('model2_path');
+            console.log(model2_path);
+            $.getJSON(data['file_path1'], function(data_) {;
               sim_data = data_;
               animateCars(1);
-              // console.log("initial finished");
-              // animateCars(2);
             });
 					}
 				});
+    $.getJSON(model2_path, function(data_) {;
+      sim_data = data_;
+      animateCars(2);
+    });
 
 }
 
@@ -291,12 +295,15 @@ function test_fleet_sim() {
         chargingSize: chargingFleetSize,
     };
     console.log(sim_params);
-    $.getJSON("static/json_files/test_sim.json", function(data) {
-      console.log("sim2_data");
+    $.getJSON("static/json_files/test_sim1.json", function(data) {
       //console.log(data);
       sim_data = data;
-      //animateCars(1);
-      //console.log("initial finished");
+      animateCars(1);
+      console.log("initial finished");
+    });
+    $.getJSON("static/json_files/test_sim2.json", function(data) {
+      //console.log(data);
+      sim_data = data;
       animateCars(2);
     });
 
@@ -552,13 +559,14 @@ function animateCars(index) {
 
                 calculateTripEmission(sim_data.trips[sim_data.curTask], true);
                 //drawEmissionChart(emissions);
-                console.log("index2");
+
                 if(index == 1){
+                    console.log("index1");
                     calculateTripWaitTime1(sim_data.trips[sim_data.curTask]);
                 }
                 else{
-                    calculateTripWaitTime2(sim_data.trips[sim_data.curTask]);
                     console.log("index2");
+                    calculateTripWaitTime2(sim_data.trips[sim_data.curTask]);
                 }
 
                 var origin = {lat: sim_data.trips[sim_data.curTask].start_loc[0], lng: sim_data.trips[sim_data.curTask].start_loc[1]};

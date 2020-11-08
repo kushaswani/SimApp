@@ -45,16 +45,16 @@ def run():
 
         msg = request.get_json()
 
-        print(msg)
+        # print(msg)
         fleetSize = int(msg['size'])
         chargingFleetSize = int(msg['chargingSize'])
-        filtered_street = get_run_sim_data.foo(fleetSize,chargingFleetSize)
-        print(filtered_street)
+        get_run_sim_data.foo(fleetSize,chargingFleetSize,1)
+        get_run_sim_data.foo(fleetSize,chargingFleetSize,2)
         # temp_data = run_sim.save_run_sim_json(20,6)
         run_sim.save_run_sim_json(fleetSize,chargingFleetSize)
         # except:
         #     print("error")
-        data = {'file_path': 'static/json_files/run_sim.json'}
+        data = {'file_path1': 'static/json_files/run_sim1.json','file_path2': 'static/json_files/run_sim2.json'}
         data = jsonify(data)
         return data
 
