@@ -253,7 +253,7 @@ function both() {
     mode[Maps.TravelMode.DRIVING] = true;
     start();
 }
-
+//used for nearest
 function fleet_sim() {
     var fleetSize = $('#fleetSize').val();
     var chargingFleetSize = $('#chargingFleetSize').val();
@@ -263,6 +263,7 @@ function fleet_sim() {
     };
     console.log(sim_params);
     console.log(JSON.stringify(sim_params));
+    //call run function in python
     $.ajax({
 					url: '/run/',
 					method: 'POST',
@@ -280,13 +281,13 @@ function fleet_sim() {
             });
 					}
 				});
-    $.getJSON(model2_path, function(data_) {;
-      sim_data = data_;
-      animateCars(2);
-    });
+    // $.getJSON(model2_path, function(data_) {;
+    //   sim_data = data_;
+    //   animateCars(2);
+    // });
 
 }
-
+//used for fair-oriented
 function test_fleet_sim() {
     var fleetSize = $('#fleetSize').val();
     var chargingFleetSize = $('#chargingFleetSize').val();
@@ -295,13 +296,13 @@ function test_fleet_sim() {
         chargingSize: chargingFleetSize,
     };
     console.log(sim_params);
-    $.getJSON("static/json_files/test_sim1.json", function(data) {
-      //console.log(data);
-      sim_data = data;
-      animateCars(1);
-      console.log("initial finished");
-    });
-    $.getJSON("static/json_files/test_sim2.json", function(data) {
+    // $.getJSON("static/json_files/test_sim1.json", function(data) {
+    //   //console.log(data);
+    //   sim_data = data;
+    //   animateCars(1);
+    //   console.log("initial finished");
+    // });
+    $.getJSON("static/json_files/run_sim2.json", function(data) {
       //console.log(data);
       sim_data = data;
       animateCars(2);
@@ -474,28 +475,32 @@ function zipUtilization() {
     }
     return [util_human, util_parc];
 }
-//the initial waiting time
+//the nearest waiting time
 function calculateTripWaitTime1(data) {
     // TODO: don't count actual trips as wait time
     // rounding to nearest multiple of 5
-    // THE PACKAGE IS USED TO DRAW CHARING TIME
+    // THE PACKAGE IS USED TO DRAW CHARGING TIME
+    // wait time is T-travel
     var wait_time = Math.round(data.route.duration/60/5);
     if (wait_time > 7) wait_time = 7;
     if (data.is_human) {
         person_wait_times1[wait_time].value += 1;
     } else {
+        console.log("waittime");
+        console.log(wait_time);
         package_wait_times1[wait_time].value += 1;
     }
     drawPersonWaitTime1(person_wait_times1);
     drawPackageWaitTime1(package_wait_times1);
 }
-//the optimized waiting time
+//the fair-oriented waiting time
 function calculateTripWaitTime2(data) {
     // TODO: don't count actual trips as wait time
     // rounding to nearest multiple of 5
     // THE PACKAGE IS USED TO DRAW CHARING TIME
     var wait_time = Math.round(data.route.duration/60/5);
     if (wait_time > 7) wait_time = 7;
+    if (wait_time < 0) wait_time = 0;
     if (data.is_human) {
         person_wait_times2[wait_time].value += 1;
     } else {
