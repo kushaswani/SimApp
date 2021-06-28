@@ -85,7 +85,7 @@
     </div>
      </div>
   <div class="col-lg-3"  style="color: white; margin-top: 10px; font-weight:600">
-    <div> <i class="fa fa-clock-o"> </i> TIME fair-oriented</div>
+    <div> <i class="fa fa-clock-o"> </i> TIME fleet-oriented</div>
 
     <div>
       <div style="display: inline-block; color: #FFFF00"> <i class="fa fa-child"></i> </div>
@@ -107,7 +107,7 @@
   <div class="col-lg-3" style="margin-top: 15px; margin-left: 20px; ">
 
     <p style="color: white; margin-top: 15px">
-      <label style="font-weight:600"> <i class="fa fa-rocket"></i>  PEV Fleet Size:</label>
+      <label style="font-weight:600"> <i class="fa fa-rocket"></i> Electric Taxi Fleet Size:</label>
       <input type="text" id="fleetSize" style="border:0; width: 70px; background-color: transparent; color:#ff66cc; font-weight:bold">
     </p>
     <div id="sliderFleetSize"  style="margin-top: -10px"></div>
@@ -120,7 +120,7 @@
     <div id="sliderMaxTripDist"  style="margin-top: -10px"></div> -->
 
     <p style="color: white; margin-top: 15px">
-      <label style="font-weight:600"> <i class="fa fa-cubes"></i>  No. of Vehicles Needing Charge</label>
+      <label style="font-weight:600"> <i class="fa fa-cubes"></i>  No. of ETs Needing Charge</label>
       <input type="text" id="chargingFleetSize" style="border:0; width: 70px; background-color: transparent; color:#ff66cc; font-weight:bold; display: inline-block">
     </p>
     <div id="sliderChargingFleetSize"  style="margin-top: -10px"></div>
@@ -160,160 +160,160 @@
   // console.log(localStorage.getItem("c_taxi_time"));
   // jQuery(function($) {
 
-function drawEmissionChart(emissions) {
-    var names = ['PEV', 'Taxi','Uber'],
-
-
-        //emissions = [2, 10, 5],
-        chart,
-        width = 225,
-        bar_height = 20,
-        height = bar_height * names.length;
-
-    /* step 1 */
-    chart = d3.select($("#step-1")[0])
-    .append('svg')
-    .attr('class', 'chart')
-    .attr('width', width)
-    .attr('height', height);
-
-    /* step 2 */
-    var x, y;
-
-    x = d3.scale.linear()
-    .domain([0, d3.max(emissions)])
-    .range([0, width]);
-
-    y = d3.scale.ordinal()
-    .domain(emissions)
-    .rangeBands([0, height]);
-
-    chart.selectAll("rect")
-    .data(emissions)
-    .enter().append("rect")
-    .attr("x", 0)
-    .attr("y", y)
-    .attr("width", x)
-    .attr("height", bar_height);
-
-
-    var xAxis = d3.svg.axis()
-    .scale(x)
-    /* step 3 */
-    chart = d3.select($("#step-3")[0])
-    .append('svg')
-    .attr('class', 'chart')
-    .attr('width', width)
-    .attr('height', height);
-
-    chart.selectAll("rect")
-    .data(emissions)
-    .enter().append("rect")
-    .attr("x", 0)
-    .attr("y", y)
-    .attr("width", x)
-    .attr("height", y.rangeBand());
-
-    chart.selectAll("text")
-    .data(emissions)
-    .enter().append("text")
-    .attr("x", x)
-    .attr("y", function(d){ return y(d) + y.rangeBand()/2; } )
-    .attr("dx", -5)
-    .attr("dy", ".36em")
-    .attr("text-anchor", "end")
-    .text(String);
-
-    /* step 4 */
-    var left_width = 30;
-
-    chart = d3.select($("#step-4")[0])
-    .append('svg')
-    .attr('class', 'chart')
-    .attr('width', left_width + width)
-    .attr('height', height);
-
-    chart.selectAll("rect")
-    .data(emissions)
-    .enter().append("rect")
-    .attr("x", left_width)
-    .attr("y", y)
-    .attr("width", x)
-    .attr("height", y.rangeBand());
-
-    chart.selectAll("text.score")
-    .data(emissions)
-    .enter().append("text")
-    .attr("x", function(d) { return x(d) + left_width; })
-    .attr("y", function(d){ return y(d) + y.rangeBand()/2; } )
-    .attr("dx", -5)
-    .attr("dy", ".36em")
-    .attr("text-anchor", "start")
-    .attr('class', 'score')
-    .text(String);
-
-    chart.selectAll("text.name")
-    .data(names)
-    .enter().append("text")
-    .attr("x", left_width / 2)
-    .attr("y", function(d, i){ return y(emissions[i]) + y.rangeBand()/2; } )
-    .attr("dy", ".36em")
-    .attr("text-anchor", "start")
-    .attr('class', 'name')
-    .text(String);
-
-    /* step 5 */
-    var gap = 2;
-  // redefine y for adjusting the gap
-    y = d3.scale.ordinal()
-    .domain(emissions)
-    .rangeBands([0, (bar_height + 2 * gap) * names.length]);
-
-    d3.select("#emissions_data").remove();
-
-    // TODO
-    chart = d3.select($("#emission_chart")[0])
-    .append('svg').attr("id", "emissions_data")
-    .attr('class', 'chart')
-    .attr('width', left_width + width + 40)
-    .attr('height', (bar_height + gap * 2) * names.length + 30)
-    .append("g")
-    .attr("transform", "translate(10, 20)");
-
-
-
-    chart.selectAll("rect")
-    .data(emissions)
-    .enter().append("rect")
-    .attr("x", left_width)
-    .attr("y", function(d) { return y(d) + gap; })
-    .attr("width", x)
-    .attr("height", bar_height);
-
-    // TODO see if we can round the labels to a couple decimal places
-    chart.selectAll("text.score")
-    .data(emissions)
-    .enter().append("text")
-    .attr("x", function(d) { return x(d) + left_width; })
-    .attr("y", function(d, i){ return y(d) + y.rangeBand()/2; } )
-    .attr("dx", -5)
-    .attr("dy", ".36em")
-    .attr("text-anchor", "end")
-    .attr('class', 'score')
-    //.text(String);
-    .text(d3.format("2.2f"))
-    .attr("transform", "translate(30, 0)");
-
-    chart.selectAll("text.name")
-    .data(names)
-    .enter().append("text")
-    .attr("x", left_width / 2)
-    .attr("y", function(d, i){ return y(emissions[i]) + y.rangeBand()/2; } )
-    .attr("dy", ".36em")
-    .attr("text-anchor", "middle")
-    .attr('class', 'name')
-    .text(String);
-};
+// function drawEmissionChart(emissions) {
+//     var names = ['PEV', 'Taxi','Uber'],
+//
+//
+//         //emissions = [2, 10, 5],
+//         chart,
+//         width = 225,
+//         bar_height = 20,
+//         height = bar_height * names.length;
+//
+//     /* step 1 */
+//     chart = d3.select($("#step-1")[0])
+//     .append('svg')
+//     .attr('class', 'chart')
+//     .attr('width', width)
+//     .attr('height', height);
+//
+//     /* step 2 */
+//     var x, y;
+//
+//     x = d3.scale.linear()
+//     .domain([0, d3.max(emissions)])
+//     .range([0, width]);
+//
+//     y = d3.scale.ordinal()
+//     .domain(emissions)
+//     .rangeBands([0, height]);
+//
+//     chart.selectAll("rect")
+//     .data(emissions)
+//     .enter().append("rect")
+//     .attr("x", 0)
+//     .attr("y", y)
+//     .attr("width", x)
+//     .attr("height", bar_height);
+//
+//
+//     var xAxis = d3.svg.axis()
+//     .scale(x)
+//     /* step 3 */
+//     chart = d3.select($("#step-3")[0])
+//     .append('svg')
+//     .attr('class', 'chart')
+//     .attr('width', width)
+//     .attr('height', height);
+//
+//     chart.selectAll("rect")
+//     .data(emissions)
+//     .enter().append("rect")
+//     .attr("x", 0)
+//     .attr("y", y)
+//     .attr("width", x)
+//     .attr("height", y.rangeBand());
+//
+//     chart.selectAll("text")
+//     .data(emissions)
+//     .enter().append("text")
+//     .attr("x", x)
+//     .attr("y", function(d){ return y(d) + y.rangeBand()/2; } )
+//     .attr("dx", -5)
+//     .attr("dy", ".36em")
+//     .attr("text-anchor", "end")
+//     .text(String);
+//
+//     /* step 4 */
+//     var left_width = 30;
+//
+//     chart = d3.select($("#step-4")[0])
+//     .append('svg')
+//     .attr('class', 'chart')
+//     .attr('width', left_width + width)
+//     .attr('height', height);
+//
+//     chart.selectAll("rect")
+//     .data(emissions)
+//     .enter().append("rect")
+//     .attr("x", left_width)
+//     .attr("y", y)
+//     .attr("width", x)
+//     .attr("height", y.rangeBand());
+//
+//     chart.selectAll("text.score")
+//     .data(emissions)
+//     .enter().append("text")
+//     .attr("x", function(d) { return x(d) + left_width; })
+//     .attr("y", function(d){ return y(d) + y.rangeBand()/2; } )
+//     .attr("dx", -5)
+//     .attr("dy", ".36em")
+//     .attr("text-anchor", "start")
+//     .attr('class', 'score')
+//     .text(String);
+//
+//     chart.selectAll("text.name")
+//     .data(names)
+//     .enter().append("text")
+//     .attr("x", left_width / 2)
+//     .attr("y", function(d, i){ return y(emissions[i]) + y.rangeBand()/2; } )
+//     .attr("dy", ".36em")
+//     .attr("text-anchor", "start")
+//     .attr('class', 'name')
+//     .text(String);
+//
+//     /* step 5 */
+//     var gap = 2;
+//   // redefine y for adjusting the gap
+//     y = d3.scale.ordinal()
+//     .domain(emissions)
+//     .rangeBands([0, (bar_height + 2 * gap) * names.length]);
+//
+//     d3.select("#emissions_data").remove();
+//
+//     // TODO
+//     chart = d3.select($("#emission_chart")[0])
+//     .append('svg').attr("id", "emissions_data")
+//     .attr('class', 'chart')
+//     .attr('width', left_width + width + 40)
+//     .attr('height', (bar_height + gap * 2) * names.length + 30)
+//     .append("g")
+//     .attr("transform", "translate(10, 20)");
+//
+//
+//
+//     chart.selectAll("rect")
+//     .data(emissions)
+//     .enter().append("rect")
+//     .attr("x", left_width)
+//     .attr("y", function(d) { return y(d) + gap; })
+//     .attr("width", x)
+//     .attr("height", bar_height);
+//
+//     // TODO see if we can round the labels to a couple decimal places
+//     chart.selectAll("text.score")
+//     .data(emissions)
+//     .enter().append("text")
+//     .attr("x", function(d) { return x(d) + left_width; })
+//     .attr("y", function(d, i){ return y(d) + y.rangeBand()/2; } )
+//     .attr("dx", -5)
+//     .attr("dy", ".36em")
+//     .attr("text-anchor", "end")
+//     .attr('class', 'score')
+//     //.text(String);
+//     .text(d3.format("2.2f"))
+//     .attr("transform", "translate(30, 0)");
+//
+//     chart.selectAll("text.name")
+//     .data(names)
+//     .enter().append("text")
+//     .attr("x", left_width / 2)
+//     .attr("y", function(d, i){ return y(emissions[i]) + y.rangeBand()/2; } )
+//     .attr("dy", ".36em")
+//     .attr("text-anchor", "middle")
+//     .attr('class', 'name')
+//     .text(String);
+// };
 
       // console.log(localStorage.getItem("emissions_coeffs"));
      // drawEmissionChart(emissions_coeffs);

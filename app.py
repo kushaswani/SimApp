@@ -14,6 +14,7 @@ from server import run_sim
 
 from dataprocessing import get_run_sim_data
 
+from datetime import timedelta
 from ast import literal_eval
 
 
@@ -59,4 +60,5 @@ def run():
         return data
 
 if __name__ == '__main__':
+    app.config['SEND_FILE_MAX_AGE_DEFAULT'] = timedelta(seconds=1)
     app.run(debug = True)
