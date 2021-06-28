@@ -117,7 +117,6 @@ var charging_stations = [
 var charging_station_image = "static/icons/charging-station-solid.svg";
 var waittime_image = "static/icons/waittime.svg";
 var charging_image = "static/icons/ezgif.com-resize.gif";
-var car_image = 'static/icons/taxi.svg';
 // window.localStorage.setItem(id, json string)
 
 var model2_path
@@ -729,14 +728,12 @@ function drawCarStuff(car) {
             scale: 8,
             strokeColor: 'white', // TODO color
         },
-        //icon: car_image,
         map: map,
       });
     car['curTaskRender'] = carMarker;
 
     var interval; // I guess I declare this to have a static reference?
-    var trip_count = 1;
-    var mypath = [];
+
     interval = window.setInterval(function() {
        if (!interval) {
            return;
@@ -774,7 +771,6 @@ function drawCarStuff(car) {
                         scale: 8,
                         strokeColor: 'white', // TODO color
                     },
-                    //icon:car_image,
                   });
                 car.curTaskRender.setMap(null);
                 car.curTaskRender = carMarker;
@@ -785,89 +781,6 @@ function drawCarStuff(car) {
         }
 
         //  various tasks - based on car.history[car.current]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         switch(car.history[car.current].kind) {
             case 'IDLE':
                 if (newTask) {
@@ -880,7 +793,6 @@ function drawCarStuff(car) {
                             strokeColor: 'white', // TODO color
                             strokeOpacity: 0.5,
                         },
-                        //icon:car_image,
                       });
                     car.curTaskRender.setMap(null);
                     car.curTaskRender = carMarker;
@@ -889,15 +801,13 @@ function drawCarStuff(car) {
                 break;
             case 'NAV':
                 if (newTask) {
-
                     ctask['color'] = 'white';
                     // Draw a line from the car's polyline
                     var polyline = polylineFromTask(ctask);
 
                     car.curTaskRender.setMap(null);
                     car.curTaskRender = polyline;
-                }
-                else {
+                } else {
                     var icons = car.curTaskRender.get('icons');
                     // icons[0].offset = ( ((sim_data.tstep - ctask.start) / (ctask.route.duration)) * 100 ) + '%'; // google maps api stuff here
                     icons[0].offset = ( ((sim_data.tstep - ctask.start) / (ctask.route.duration)) * 100 ) + '%'; // google maps api stuff here
@@ -909,6 +819,7 @@ function drawCarStuff(car) {
                 if (newTask) {
                     ctask['color'] = '#F0F000';
 
+                    // Draw a line from the car's polyline
                     var polyline = polylineFromTask(ctask);
 
                     car.curTaskRender.setMap(null);
@@ -916,8 +827,6 @@ function drawCarStuff(car) {
 
                 } else {
                     var icons = car.curTaskRender.get('icons');
-                    // console.log('ctask');
-                    // console.log(ctask);
                     // icons[0].offset = ( ((sim_data.tstep - ctask.start) / (ctask.route.duration)) * 100 ) + '%'; // google maps api stuff here
                     icons[0].offset = ( ((sim_data.tstep - ctask.start) / (ctask.route.duration)) * 100 ) + '%'; // google maps api stuff here
                     car.curTaskRender.set('icons', icons);
@@ -926,7 +835,7 @@ function drawCarStuff(car) {
                 break;
             case 'CHARGING':
                 if (newTask) {
-                    ctask['color'] = '#06c906';
+                    ctask['color'] = '#06c906'
                     // Draw a line from the car's polyline
                     var polyline = polylineFromTask(ctask);
 
@@ -957,53 +866,36 @@ function drawCarStuff(car) {
     }, sim_framestep * 2);
     intervals.push(interval);
 }
-//用于draw car stuff->animate cars
+
 function polylineFromTask(ctask) {
-
-
-    // Credits to http://www.geocodezip.com/V3_Polyline_from_directions.html
-    //polyline.path = ctask.route.rte.overview_polyline.points;
-    //console.log(polyline.getPath());
-
-    var mypath = []
-    var legs = ctask.route.rte.legs;
-    for (var i = 0; i < legs.length; i++) {
-        var steps = legs[i].steps;
-        for (var j = 0; j < steps.length; j++) {
-            var nextSegment = google.maps.geometry.encoding.decodePath(steps[j].polyline.points);
-            for (var k = 0; k < nextSegment.length; k++) {
-                mypath.push(nextSegment[k]);
-            }
-        }
-    }
-
     var polyline = new Maps.Polyline({
-        path: mypath,
+        path: [],
         icons: [],
         strokeColor: ctask.color,
         strokeOpacity: 0.5,
         strokeWeight: 7,
     });
 
-    // var lineSymbol = {
-    //     url: car_image,
-    // }
+    // Credits to http://www.geocodezip.com/V3_Polyline_from_directions.html
+    // var path = ctask.route.rte.overview_polyline.points;
+    var legs = ctask.route.rte.legs;
+    for (var i = 0; i < legs.length; i++) {
+        var steps = legs[i].steps;
+        for (var j = 0; j < steps.length; j++) {
+            var nextSegment = google.maps.geometry.encoding.decodePath(steps[j].polyline.points);
+            for (var k = 0; k < nextSegment.length; k++) {
+                polyline.getPath().push(nextSegment[k]);
+            }
+        }
+    }
+
     var lineSymbol = {
         path: Maps.SymbolPath.CIRCLE,
         scale: 8,
         strokeColor: ctask.color,
     };
-    //路径的标识也就是车子
+
     // add the circular symbol to the line
-//     var taxi_path = "M 194.026,291.861 L 193.968,291.861 L 89.235,291.861 L 89.235,324.93 C 89.235,365.187 30.997,365.666 30.997,324.93 L 30.997,291.861 L 0,291.861 L 0,188.301 C 0,160.505 22.358,145.816 34.984,144.213 L 66.858,62.816 C 72.858,47.316 85.858,34.068 110.358,34.068 L 155.897,34.068 L 155.897,12.816 C 155.897,4.316 160.507,0 168.007,0 L 193.968,0 L 194.026,0 L 193.964,0 L 194.023,0 L 220.484,0 C 227.984,0 232.594,4.316 232.594,12.816 L 232.594,34.068 L 277.61,34.068 C 302.11,34.068 315.11,47.316 321.11,62.816 L 352.984,144.213 C 365.61,145.816 387.991,160.505 387.991,188.301 L 387.991,291.861 L 356.994,291.861 L 356.994,324.93 C 356.994,365.666 298.756,365.187 298.756,324.93 L 298.756,291.861 L 194.023,291.861 L 193.964,291.861 L 194.026,291.861 z";
-//     var iconPath1 = {
-//   path: taxi_path,
-//   fillColor: '#45c4ea',
-//         rotation:90,
-//   fillOpacity: 0.7,
-//   strokeOpacity: 0,
-//   scale:0.06
-// };
     polyline.icons.push({
         icon: lineSymbol,
         offset: "0%", // at the starting position
@@ -1025,7 +917,6 @@ function animateLines() {
             scale: 8,
             strokeColor: line.strokeColor,
         };
-        // var lineSymbol = car_image;
 
         // add the circular symbol to the line
         line.icons.push({
@@ -1342,7 +1233,6 @@ document.getElementById("driveBtn").disabled = false;
 
 window.onload = function() {
     document.getElementById("trip-file").addEventListener("change", fileChanged, false);
-
     map = new Maps.Map(document.getElementById('map-canvas'), {
       //zoom: 14,
       zoom: 11,
@@ -1353,7 +1243,6 @@ window.onload = function() {
       streetViewControl: false,
       zoomControl: false
   });
-    //map.set('style',mapStyle);
 
     for (var i = 0; i < 32; i++){
         var marker = new google.maps.Marker({
@@ -1685,33 +1574,6 @@ var darkMap = [
         {
             "lightness": 17
         }
-        ]
-    },
-    {
-        "featureType": "administrative",
-        "elementType": "labels",
-        "stylers": [
-        { "visibility": "off" }
-        ]
-    },
-    {
-        "featureType": "poi",
-        "elementType": "labels",
-        "stylers": [
-        { "visibility": "off" }
-        ]
-    },
-    {
-        "featureType": "water",
-        "elementType": "labels",
-        "stylers": [
-        { "visibility": "off" }
-        ]
-    },{
-        "featureType": "road",
-        "elementType": "labels",
-        "stylers": [
-        { "visibility": "off" }
         ]
     }
     ]
