@@ -182,8 +182,7 @@ def find_loc(templist):
 
 #calculate time of travel
 def get_dist_time(start_loc,charging_stations):
-    #gmaps = googlemaps.Client(key='AIzaSyDG6qHspo59jg8SvfACGCWI8By0c7z7d-k')
-    gmaps = googlemaps.Client(key='AIzaSyA9HOgwSoZvfpPvHNyrXCXBMyQzQZkTg6M')
+    gmaps = googlemaps.Client(key='AIzaSyDG6qHspo59jg8SvfACGCWI8By0c7z7d-k')
     now = datetime.now()
     start_coord = "" + str(start_loc[1]) + ", " + str(start_loc[0])
     dest_coord = "" + str(charging_stations[1]) + ", " + str(charging_stations[0])
